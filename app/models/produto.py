@@ -10,6 +10,7 @@ class Produto(SQLModel, table=True):
     imagem_url: Optional[str] = None
     adicionais: List[Dict] = Field(sa_column=Column(JSON), default=[])
     categoria_id: Optional[int] = Field(default=None, foreign_key="categoria_produto.id")
+    estabelecimento_id: int = Field(foreign_key="estabelecimento.id")
     ativo: bool = Field(default=True)
 
     categoria: Optional["CategoriaProduto"] = Relationship(back_populates="produtos")
