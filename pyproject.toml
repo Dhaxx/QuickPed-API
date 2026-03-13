@@ -1,0 +1,11 @@
+[project]
+name = "quickped-api"
+version = "0.1.0"
+description = "An API for QuickPed, an order management system for restaurants."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.135.1",
+    "psycopg2>=2.9.11",
+    "sqlmodel>=0.0.37",
+]

@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+env/
+venv/
+*.env
+*.sqlite3
+*.db
+.idea/
+.vscode/
+.DS_Store
+*.log
+
+# sensitive files
+docker/docker-compose.yml
