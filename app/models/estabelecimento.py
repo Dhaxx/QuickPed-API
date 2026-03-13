@@ -1,14 +1,9 @@
-from sqlmodel import JSON, Column, Field, SQLModel
-from typing import Optional, List, Dict
+from sqlmodel import JSON, Column, Field, SQLModel, Relationship
+from typing import Optional, List
+from pydantic import EmailStr
 
-class Estabelecimento(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    nome: str
-    cnpj: str
-    endereco: str
-    telefone: str
-    email: str
-    dias_funcionamento: List[Dict] = Field(sa_column=Column(JSON), default=[
+def dias_default():
+    return [
         {"dia": "Segunda-feira", "abertura": "08:00", "fechamento": "18:00"},
         {"dia": "Terça-feira", "abertura": "08:00", "fechamento": "18:00"},
         {"dia": "Quarta-feira", "abertura": "08:00", "fechamento": "18:00"},
@@ -16,7 +11,30 @@ class Estabelecimento(SQLModel, table=True):
         {"dia": "Sexta-feira", "abertura": "08:00", "fechamento": "18:00"},
         {"dia": "Sábado", "abertura": "10:00", "fechamento": "16:00"},
         {"dia": "Domingo", "abertura": "Fechado", "fechamento": "Fechado"}
-    ])
+    ]
+
+class DiaFuncionamento(SQLModel):
+    dia: str
+    abertura: str
+    fechamento: str
+
+class EstabelecimentoBase(SQLModel):
+    nome: str
+    cnpj: str
+    endereco: str
+    telefone: str
+    email: EmailStr
     logo_url: Optional[str] = None
+
+class Estabelecimento(EstabelecimentoBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+    dias_funcionamento: List[DiaFuncionamento] = Field(
+        sa_column=Column(JSON),
+        default_factory=dias_default
+    )
+
     esta_aberto: bool = Field(default=False)
     ativo: bool = Field(default=False)
+
+    categorias: List["CategoriaProduto"] = Relationship(back_populates="estabelecimento")
