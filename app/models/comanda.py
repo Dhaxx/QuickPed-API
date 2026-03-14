@@ -1,5 +1,5 @@
-from sqlmodel import JSON, Column, Field, SQLModel
-from typing import Optional, List, Dict
+from sqlmodel import Field, SQLModel
+from typing import Optional
 from enum import Enum
 
 class StatusComanda(str, Enum):
