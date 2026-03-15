@@ -5,6 +5,8 @@ class EstabelecimentoCreate(EstabelecimentoBase):
     
 class EstabelecimentoRead(EstabelecimentoBase):
     id: int
+    nome: str
+    telefone: str
     dias_funcionamento: List[DiaFuncionamento]
     esta_aberto: bool
 
