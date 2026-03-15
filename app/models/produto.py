@@ -20,6 +20,7 @@ class Produto(ProdutoBase, table=True):
     categoria: Optional["CategoriaProduto"] = Relationship(back_populates="produtos")
 
 class GrupoAdicional(SQLModel, table=True):
+    __tablename__ = "grupo_adicional"
     id: Optional[int] = Field(default=None, primary_key=True)
     nome: str
     max_selecoes: int = Field(default=1)
@@ -32,6 +33,6 @@ class Adicional(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nome: str
     preco: Decimal = Field(sa_column=Column(Numeric(10,2)))
-    grupo_id: int = Field(foreign_key="grupoadicional.id")
+    grupo_id: int = Field(foreign_key="grupo_adicional.id")
     
     grupo: "GrupoAdicional" = Relationship(back_populates="adicionais")

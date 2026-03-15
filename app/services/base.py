@@ -2,15 +2,10 @@ from typing import Type, TypeVar, Generic, Optional, List
 from sqlmodel import Session, SQLModel, select
 
 ModelType = TypeVar("ModelType", bound=SQLModel)
-CreateSchema = TypeVar("CreateSchema", bound=SQLModel)
-UpdateSchema = TypeVar("UpdateSchema", bound=SQLModel)
 
-class BaseService(Generic[ModelType, CreateSchema, UpdateSchema]):
-    def __init__(self, model: type[ModelType], create_schema: type[CreateSchema], update_schema: type[UpdateSchema]):
+class BaseService(Generic[ModelType]):
+    def __init__(self, model: type[ModelType]):
         self.model = model
-        self.create_schema = create_schema
-        self.update_schema = update_schema
-
 
     def get(self, session: Session, obj_id: int) -> Optional[ModelType]:
         return session.get(self.model, obj_id)
@@ -21,8 +16,8 @@ class BaseService(Generic[ModelType, CreateSchema, UpdateSchema]):
         return session.exec(stmt).all() # type: ignore
     
 
-    def create(self, session: Session, model_data: CreateSchema) -> ModelType:
-        obj = self.model(**model_data.model_dump())
+    def create(self, session: Session, model_data: dict) -> ModelType:
+        obj = self.model(**model_data)
 
         session.add(obj)
         session.commit()
@@ -31,13 +26,13 @@ class BaseService(Generic[ModelType, CreateSchema, UpdateSchema]):
         return obj
     
     
-    def update(self, session: Session, obj_id: int, model_data: UpdateSchema) -> Optional[ModelType]:
+    def update(self, session: Session, obj_id: int, model_data: dict) -> Optional[ModelType]:
         obj = session.get(self.model, obj_id)
 
         if not obj:
             return None
         
-        data = model_data.model_dump(exclude_unset=True)
+        data = model_data
 
         for column, value in data.items():
             setattr(obj, column, value)
