@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from .database.engine import create_db_and_tables
 from .core.config import settings
 from .api.v1.estabelecimento import router as estabelecimento_router
+from .api.v1.categoria_produto import router as categ_produto_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,3 +18,4 @@ app = FastAPI(
 )
 
 app.include_router(estabelecimento_router, prefix="/api/v1/estabelecimento", tags=["estabelecimento"])
+app.include_router(categ_produto_router, prefix="/api/v1/categoria-produto", tags=["categoria-produto"])
