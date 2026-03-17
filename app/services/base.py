@@ -11,8 +11,8 @@ class BaseService(Generic[ModelType]):
         return session.get(self.model, obj_id)
     
 
-    def get_all(self, session: Session) -> List[ModelType]:
-        stmt = select(self.model)
+    def get_all(self, session: Session, entidade_id: int) -> List[ModelType]:
+        stmt = select(self.model).where(self.model.entidade_id == entidade_id)
         return session.exec(stmt).all() # type: ignore
     
 

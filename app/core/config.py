@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     db_password: str = "development"
     db_name: str = "test.db"
     sgbd_driver: str = "sqlite"
+    secret_key: str = "your_secret_key"
 
     @property
     def db_url(self) -> str:

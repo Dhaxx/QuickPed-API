@@ -7,6 +7,7 @@ class CategoriaProdutoRead(CategoriaProdutoBase):
     id: int
     nome: str
     icone: Optional[str] = None
+    estabelecimento_id: int
 
 class CategoriaProdutoUpdate(SQLModel):
     nome: Optional[str] = None
