@@ -38,3 +38,4 @@ class Estabelecimento(EstabelecimentoBase, table=True):
     ativo: bool = Field(default=False)
 
     categorias: List["CategoriaProduto"] = Relationship(back_populates="estabelecimento")
+    usuarios: List["Usuario"] = Relationship( back_populates="estabelecimento" )

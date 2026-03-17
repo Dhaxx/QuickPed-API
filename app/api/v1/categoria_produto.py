@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status
 from ...schemas.categoria_produto import CategoriaProdutoCreate, CategoriaProdutoRead
 from ...services.categoria_produto import categoria_produto_service
 from ...database.engine import get_session
+from ...auth.dependencies import get_current_user, get_current_estabelecimento
 
 router = APIRouter()
 
@@ -9,7 +10,7 @@ router = APIRouter()
 def create_categoria_produto(
     data: CategoriaProdutoCreate,
     session = Depends(get_session),
-    estabelecimento_id: int = Depends(categoria_produto_service.get_estabelecimento_id_from_token)
+    estabelecimento_id: int = Depends(get_current_estabelecimento)
 ):
     dados = data.model_dump()
 
@@ -20,7 +21,7 @@ def create_categoria_produto(
 @router.get("/all", response_model=list[CategoriaProdutoRead], status_code=status.HTTP_200_OK)
 def get_categoria_produtos(
     session = Depends(get_session),
-    estabelecimento_id: int = Depends(categoria_produto_service.get_estabelecimento_id_from_token)
+    estabelecimento_id: int = Depends(get_current_estabelecimento)
 ):
     return categoria_produto_service.get_all(session, estabelecimento_id)
 

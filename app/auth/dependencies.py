@@ -7,7 +7,7 @@ from ..database.engine import get_session
 from app.models.usuario import Usuario
 from app.auth.jwt import SECRET_KEY, ALGORITHM
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/admin/autenticacao/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_session)) -> Usuario:
     try:

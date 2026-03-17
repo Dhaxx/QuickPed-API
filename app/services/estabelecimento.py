@@ -1,6 +1,8 @@
 from app.models.estabelecimento import Estabelecimento, DiaFuncionamento, dias_default
 from app.services.base import BaseService
 from sqlmodel import Session
+from app.models.usuario import Usuario
+from ..auth.hash import gerar_hash
 
 class EstabelecimentoService(BaseService[Estabelecimento]):
 
@@ -12,14 +14,22 @@ class EstabelecimentoService(BaseService[Estabelecimento]):
         # Cria o objeto
         estabelecimento = Estabelecimento(**model_data)
         session.add(estabelecimento)
+        session.flush()
+
+        # estabelecimento.dias_funcionamento = [
+        #     DiaFuncionamento(**d) if isinstance(d, dict) else d
+        #     for d in estabelecimento.dias_funcionamento
+        # ]
+
+        usuario_admin = Usuario(
+            usuario=estabelecimento.cnpj,  # Usando o CNPJ como nome de usuário
+            senha_hash=gerar_hash(estabelecimento.cnpj),  # Senha padrão, deve ser alterada depois
+            estabelecimento_id=estabelecimento.id
+        )
+        session.add(usuario_admin)
+
         session.commit()
         session.refresh(estabelecimento)
-
-        # Converte cada item do JSON em DiaFuncionamento, garantindo lista de objetos
-        estabelecimento.dias_funcionamento = [
-            DiaFuncionamento(**d) if isinstance(d, dict) else d
-            for d in estabelecimento.dias_funcionamento
-        ]
 
         return estabelecimento
 
