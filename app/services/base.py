@@ -7,13 +7,13 @@ class BaseService(Generic[ModelType]):
     def __init__(self, model: type[ModelType]):
         self.model = model
 
-    def get(self, session: Session, obj_id: int) -> Optional[ModelType]:
-        return session.get(self.model, obj_id)
+    # def get(self, session: Session, obj_id: int) -> Optional[ModelType]:
+    #     return session.get(self.model, obj_id)
     
 
-    def get_all(self, session: Session, entidade_id: int) -> List[ModelType]:
-        stmt = select(self.model).where(self.model.entidade_id == entidade_id)
-        return session.exec(stmt).all() # type: ignore
+    def get(self, session: Session, estabelecimento_id: int) -> List[ModelType]:
+        stmt = select(self.model).where(self.model.estabelecimento_id == estabelecimento_id)
+        return session.exec(stmt).all()
     
 
     def create(self, session: Session, model_data: dict) -> ModelType:
@@ -26,8 +26,9 @@ class BaseService(Generic[ModelType]):
         return obj
     
     
-    def update(self, session: Session, obj_id: int, model_data: dict) -> Optional[ModelType]:
-        obj = session.get(self.model, obj_id)
+    def update(self, session: Session, obj_id: int, model_data: dict, estabelecimento_id: int) -> Optional[ModelType]:
+        stmt = select(self.model).where(self.model.id == obj_id, self.model.estabelecimento_id == estabelecimento_id)
+        obj = session.exec(stmt).one_or_none()
 
         if not obj:
             return None
@@ -44,8 +45,9 @@ class BaseService(Generic[ModelType]):
         return obj
     
 
-    def delete(self, session: Session, obj_id: int) -> Optional[ModelType]:
-        obj = session.get(self.model, obj_id)
+    def delete(self, session: Session, obj_id: int, estabelecimento_id: int) -> Optional[ModelType]:
+        stmt = select(self.model).where(self.model.id == obj_id, self.model.estabelecimento_id == estabelecimento_id)
+        obj = session.exec(stmt).one_or_none()
 
         if not obj:
             return None
