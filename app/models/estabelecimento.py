@@ -39,3 +39,5 @@ class Estabelecimento(EstabelecimentoBase, table=True):
 
     categorias: List["CategoriaProduto"] = Relationship(back_populates="estabelecimento")
     usuarios: List["Usuario"] = Relationship( back_populates="estabelecimento" )
+    grupos_adicionais: List["GrupoAdicional"] = Relationship( back_populates="estabelecimento" ) 
+    adicionais: List["Adicional"] = Relationship( back_populates="estabelecimento" )

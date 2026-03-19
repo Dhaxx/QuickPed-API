@@ -23,7 +23,7 @@ def get_categoria_produtos(
     session = Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento)
 ):
-    return categoria_produto_service.get_all(session, estabelecimento_id)
+    return categoria_produto_service.get(session, estabelecimento_id)
 
 @router.put("/", response_model=CategoriaProdutoRead, status_code=status.HTTP_200_OK)
 def update_categoria_produto(
@@ -32,7 +32,7 @@ def update_categoria_produto(
     estabelecimento_id: int = Depends(get_current_estabelecimento),
     session = Depends(get_session)
 ):
-    dados = data.model_dump()
+    dados = data.model_dump(exclude_unset=True)
     return categoria_produto_service.update(session, categoria_produto_id, dados, estabelecimento_id)
 
 @router.delete("/{categoria_produto_id}", response_model=CategoriaProdutoRead, status_code=status.HTTP_200_OK)
