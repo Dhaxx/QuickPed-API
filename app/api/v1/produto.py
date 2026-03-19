@@ -23,5 +23,5 @@ def update_produto( produto_id: int, data: ProdutoUpdate, session = Depends(get_
     return produto_service.update(session, produto_id, dados, estabelecimento_id)
 
 @router.delete("/", response_model=ProdutoRead, status_code=status.HTTP_200_OK)
-def update_produto( produto_id: int, session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
+def delete_produto( produto_id: int, session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
     return produto_service.delete(session, produto_id, estabelecimento_id)

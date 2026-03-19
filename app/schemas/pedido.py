@@ -5,16 +5,15 @@ class PedidoCreate(PedidoBase):
 
 class PedidoRead(PedidoBase):
     id: int
-    numero_mesa: int
-    nome_cliente: str
-    itens: List[PedidoItem] = Field(
-        sa_column=Column(JSON),
-        default_factory=list
-    )
+    status: str
+    total: Decimal
+    criado_em: str
+    itens: list[PedidoItem] = Field(default_factory=list)
 
 class PedidoUpdate(SQLModel):
-    nome_cliente: Optional[str] = None
-    numero_mesa: Optional[int] = None
-    itens: Optional[List[PedidoItemAdicional]] = None
-    total: Optional[Decimal] = None
     status: Optional[str] = None
+
+class PedidoItemCreate(SQLModel):
+    produto_id: int
+    quantidade: int
+    adicionais: List[PedidoItemAdicional] = Field(default_factory=list)

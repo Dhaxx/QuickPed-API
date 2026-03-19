@@ -8,6 +8,7 @@ from .api.v1.categoria_produto import router as categ_produto_router
 from .api.v1.produto import router as produto_router
 from .api.v1.grupo_adicional import router as grupo_adicional_router
 from .api.v1.adicional import router as adicional_router
+from .api.v1.pedido import router as pedido_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,3 +28,4 @@ app.include_router(categ_produto_router, prefix="/api/v1/admin/categoria-produto
 app.include_router(produto_router, prefix="/api/v1/admin/produto", tags=["produto"])
 app.include_router(grupo_adicional_router, prefix="/api/v1/produto/grupo-adicional", tags=["grupo-adicional"])
 app.include_router(adicional_router, prefix="/api/v1/produto/adicional", tags=["adicional"])
+app.include_router(pedido_router, prefix="/api/v1/produto/pedido", tags=["pedido"])

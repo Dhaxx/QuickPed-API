@@ -41,3 +41,4 @@ class Estabelecimento(EstabelecimentoBase, table=True):
     usuarios: List["Usuario"] = Relationship( back_populates="estabelecimento" )
     grupos_adicionais: List["GrupoAdicional"] = Relationship( back_populates="estabelecimento" ) 
     adicionais: List["Adicional"] = Relationship( back_populates="estabelecimento" )
+    pedidos: List["Pedido"] = Relationship(back_populates="estabelecimento")
