@@ -1,4 +1,4 @@
-from ..models.pedido import PedidoBase, SQLModel, Optional, Decimal, List, PedidoItem, Field, JSON, Column, PedidoItemAdicional, datetime, timezone
+from ..models.pedido import PedidoBase, SQLModel, Optional, Decimal, List, PedidoItem, Field, datetime, timezone
 
 class PedidoCreate(PedidoBase):
     pass
@@ -16,4 +16,4 @@ class PedidoUpdate(SQLModel):
 class PedidoItemCreate(SQLModel):
     produto_id: int
     quantidade: int
-    adicionais: List[PedidoItemAdicional] = Field(default_factory=list)
+    adicionais: List[int] = Field(default_factory=list)

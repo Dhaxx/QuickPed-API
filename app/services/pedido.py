@@ -46,31 +46,8 @@ class PedidoService(BaseService[Pedido]):
             preco_unitario = produto.preco
             subtotal_item = preco_unitario * item.quantidade
 
-            adicionais_processados = []
-
             if item.adicionais:
-                adicionais = session.exec(
-                    select(Adicional).where(
-                        Adicional.id.in_(item.adicionais),
-                        Adicional.estabelecimento_id == estabelecimento_id
-                    )
-                ).all()
-
-                adicionais_map = {a.id: a for a in adicionais}
-
-                for adicional_id in item.adicionais:
-                    adicional = adicionais_map.get(adicional_id)
-
-                    if not adicional:
-                        raise ValueError(f"Adicional {adicional_id} inválido")
-
-                    adicionais_processados.append(
-                        PedidoItemAdicional(
-                            nome=adicional.nome,
-                            preco=adicional.preco
-                        )
-                    )
-
+                for adicional in item.adicionais:
                     subtotal_item += adicional.preco * item.quantidade
 
             item_pedido = PedidoItem(
@@ -78,24 +55,29 @@ class PedidoService(BaseService[Pedido]):
                 nome_produto=produto.nome,
                 preco_unitario=preco_unitario,
                 quantidade=item.quantidade,
-                adicionais=adicionais_processados
+                adicionais=item.adicionais
             )
 
             itens_processados.append(item_pedido)
             total_pedido += subtotal_item
 
-        itens_json_serializavel = [
-            {
+        itens_json_serializavel = []
+        for i in itens_processados:
+            adicionais_serializaveis = []
+            for a in i.adicionais:
+                # se a veio do banco, deve ter id
+                adicionais_serializaveis.append({
+                    "id": getattr(a, "id", None),  # <- aqui você coloca o id
+                    "nome": a.nome,
+                    "preco": float(a.preco)
+                })
+            itens_json_serializavel.append({
                 "produto_id": i.produto_id,
                 "nome_produto": i.nome_produto,
                 "preco_unitario": float(i.preco_unitario),
                 "quantidade": i.quantidade,
-                "adicionais": [
-                    {"nome": a.nome, "preco": float(a.preco)} for a in i.adicionais
-                ]
-            }
-            for i in itens_processados
-        ]
+                "adicionais": adicionais_serializaveis
+            })
 
         pedido = Pedido(
             estabelecimento_id=estabelecimento_id,

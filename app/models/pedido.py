@@ -15,7 +15,8 @@ class StatusPedido(str, Enum):
 
 
 class PedidoItemAdicional(SQLModel):
-    nome: str
+    id: int
+    nome: Optional[str] = None
     preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_pedido_item_adicional_positivo"), default=Decimal('0.00')))
 
 
