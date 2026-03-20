@@ -13,7 +13,7 @@ class Mesa(MesaBase, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    estabelecimento_id: int = Field(index=True)
+    estabelecimento_id: int = Field(index=True, foreign_key="estabelecimento.id", nullable=False)
 
     token: str = Field(default_factory=lambda: str(uuid.uuid4()), unique=True, index=True)
 

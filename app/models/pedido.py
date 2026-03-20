@@ -1,4 +1,4 @@
-from sqlmodel import Column, Field, SQLModel, Numeric, JSON, Relationship
+from sqlmodel import Column, Field, SQLModel, Numeric, JSON, Relationship, CheckConstraint
 from typing import Optional, List
 from decimal import Decimal
 from enum import Enum
@@ -16,13 +16,13 @@ class StatusPedido(str, Enum):
 
 class PedidoItemAdicional(SQLModel):
     nome: str
-    preco: Decimal = Field(sa_column=Column(Numeric(10,2)))
+    preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_positivo"), default=0.00))
 
 
 class PedidoItem(SQLModel):
     produto_id: int
     nome_produto: str
-    preco_unitario: Decimal = Field(sa_column=Column(Numeric(10,2)))
+    preco_unitario: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_positivo"), default=0.00))
     quantidade: int
     adicionais: List[PedidoItemAdicional] = Field(default_factory=list)
 
@@ -43,7 +43,7 @@ class Pedido(PedidoBase, table=True):
     comanda_id: int = Field(foreign_key="comanda.id", index=True)
     status: StatusPedido = Field(default=StatusPedido.PENDENTE, index=True)
     criado_em: datetime = Field(default_factory=datetime.now())
-    total: Decimal = Field(sa_column=Column(Numeric(10, 2)))
+    total: Decimal = Field(sa_column=Column(Numeric(10, 2), CheckConstraint("preco >= 0", name="check_preco_positivo"), default=0.00))
 
     estabelecimento: "Estabelecimento" = Relationship(back_populates="pedidos")
     comanda: "Comanda" = Relationship(back_populates="pedidos")

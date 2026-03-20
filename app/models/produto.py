@@ -1,4 +1,4 @@
-from sqlmodel import SQLModel, Field, Relationship, JSON, Column, Numeric
+from sqlmodel import SQLModel, Field, Relationship, JSON, Column, Numeric, CheckConstraint
 from typing import Optional, List
 from .categoria_produto import CategoriaProduto
 from decimal import Decimal
@@ -7,13 +7,13 @@ from .estabelecimento import Estabelecimento
 class ProdutoBase(SQLModel):
     nome: str
     descricao: Optional[str] = None
-    preco: Decimal = Field(sa_column=Column(Numeric(10,2)))
+    preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_positivo")))
     imagem_url: Optional[str] = None
+    categoria_id: int = Field(foreign_key="categoria_produto.id", index=True)
 
 class Produto(ProdutoBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    categoria_id: int = Field(foreign_key="categoria_produto.id", index=True)
     estabelecimento_id: int = Field(foreign_key="estabelecimento.id", index=True)
     ativo: bool = Field(default=True)
 
@@ -36,7 +36,7 @@ class GrupoAdicional(GrupoAdicionalBase, table=True):
 
 class AdicionalBase(SQLModel):
     nome: str
-    preco: Decimal = Field(sa_column=Column(Numeric(10,2)))
+    preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_positivo")))
 
 class Adicional(AdicionalBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
