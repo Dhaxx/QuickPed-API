@@ -1,4 +1,4 @@
-from ..models.comanda import ComandaBase, SQLModel, Optional, StatusComanda
+from ..models.comanda import ComandaBase, SQLModel, Optional, StatusComanda, Decimal
 
 class ComandaCreate(ComandaBase):
     estabelecimento_id: int
@@ -6,8 +6,7 @@ class ComandaCreate(ComandaBase):
 
 class ComandaRead(ComandaBase):
     id: int
+    total: Decimal
 
 class ComandaUpdate(SQLModel):
-    estabelecimento_id: Optional[int] = None
-    numero_mesa: Optional[int] = None
     status: Optional[StatusComanda] = None

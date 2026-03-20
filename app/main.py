@@ -9,6 +9,8 @@ from .api.v1.produto import router as produto_router
 from .api.v1.grupo_adicional import router as grupo_adicional_router
 from .api.v1.adicional import router as adicional_router
 from .api.v1.pedido import router as pedido_router
+from .api.v1.comanda import router as comanda_router
+from .api.v1.mesa import router as mesa_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,10 +24,12 @@ app = FastAPI(
     title=settings.app_name, 
 )
 
-app.include_router(autenticacao_router, prefix="/api/v1/admin/autenticacao", tags=["autenticacao"])
-app.include_router(estabelecimento_router, prefix="/api/v1/master/estabelecimento", tags=["estabelecimento"])
-app.include_router(categ_produto_router, prefix="/api/v1/admin/categoria-produto", tags=["categoria-produto"])
-app.include_router(produto_router, prefix="/api/v1/admin/produto", tags=["produto"])
-app.include_router(grupo_adicional_router, prefix="/api/v1/produto/grupo-adicional", tags=["grupo-adicional"])
-app.include_router(adicional_router, prefix="/api/v1/produto/adicional", tags=["adicional"])
-app.include_router(pedido_router, prefix="/api/v1/produto/pedido", tags=["pedido"])
+app.include_router(autenticacao_router, prefix="/api/v1/admin/autenticacao", tags=["Autenticacao"])
+app.include_router(estabelecimento_router, prefix="/api/v1/master/estabelecimento", tags=["Estabelecimento"])
+app.include_router(categ_produto_router, prefix="/api/v1/admin/categoria-produto", tags=["Categoria Produto"])
+app.include_router(produto_router, prefix="/api/v1/admin/produto", tags=["Produto"])
+app.include_router(grupo_adicional_router, prefix="/api/v1/produto/grupo-adicional", tags=["Grupo Adicional"])
+app.include_router(adicional_router, prefix="/api/v1/produto/adicional", tags=["Adicional"])
+app.include_router(pedido_router, prefix="/api/v1/pedido", tags=["Pedido"])
+app.include_router(comanda_router, prefix="/api/v1/comanda", tags=["Comanda"])
+app.include_router(mesa_router, prefix="/api/v1/mesa", tags=["Mesa"])

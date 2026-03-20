@@ -11,6 +11,7 @@ class StatusPedido(str, Enum):
     PREPARACAO = "Em Preparação"
     PRONTO = "Pronto"
     ENTREGUE = "Entregue"
+    CANCELADO = "Cancelado"
 
 
 class PedidoItemAdicional(SQLModel):
