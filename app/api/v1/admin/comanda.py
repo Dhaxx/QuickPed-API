@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
-from ...schemas.comanda import ComandaCreate, ComandaRead, ComandaUpdate
-from ...services.comanda import comanda_service
-from ...database.engine import get_session
-from ...auth.dependencies import get_current_estabelecimento
+from app.schemas.comanda import ComandaCreate, ComandaRead, ComandaUpdate
+from app.services.comanda import comanda_service
+from app.database.engine import get_session
+from app.auth.dependencies import get_current_estabelecimento
 
 router = APIRouter()
 

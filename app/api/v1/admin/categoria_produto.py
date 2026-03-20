@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
-from ...schemas.categoria_produto import CategoriaProdutoCreate, CategoriaProdutoRead, CategoriaProdutoUpdate
-from ...services.categoria_produto import categoria_produto_service
-from ...database.engine import get_session
-from ...auth.dependencies import get_current_user, get_current_estabelecimento
+from app.schemas.categoria_produto import CategoriaProdutoCreate, CategoriaProdutoRead, CategoriaProdutoUpdate
+from app.services.categoria_produto import categoria_produto_service
+from app.database.engine import get_session
+from app.auth.dependencies import get_current_user, get_current_estabelecimento
 
 router = APIRouter()
 

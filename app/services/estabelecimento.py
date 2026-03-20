@@ -3,27 +3,29 @@ from app.services.base import BaseService
 from sqlmodel import Session
 from app.models.usuario import Usuario
 from ..auth.hash import gerar_hash
+import re
+import unidecode
 
 class EstabelecimentoService(BaseService[Estabelecimento]):
+    def gerar_slug(nome: str) -> str:
+        slug = unidecode.unidecode(nome)  # remove acentos
+        slug = slug.lower()
+        slug = re.sub(r'[^a-z0-9]+', '-', slug)  # substitui espaços e caracteres especiais
+        slug = slug.strip('-')
+        return slug
 
     def create(self, session: Session, model_data: dict) -> Estabelecimento:
-        # Se não vier dias_funcionamento, aplica o padrão
         if not model_data.get("dias_funcionamento"):
             model_data["dias_funcionamento"] = dias_default()
         
-        # Cria o objeto
         estabelecimento = Estabelecimento(**model_data)
+        estabelecimento.slug = EstabelecimentoService.gerar_slug(estabelecimento.nome)
         session.add(estabelecimento)
         session.flush()
 
-        # estabelecimento.dias_funcionamento = [
-        #     DiaFuncionamento(**d) if isinstance(d, dict) else d
-        #     for d in estabelecimento.dias_funcionamento
-        # ]
-
         usuario_admin = Usuario(
-            usuario=estabelecimento.cnpj,  # Usando o CNPJ como nome de usuário
-            senha_hash=gerar_hash(estabelecimento.cnpj),  # Senha padrão, deve ser alterada depois
+            usuario=estabelecimento.cnpj,
+            senha_hash=gerar_hash(estabelecimento.cnpj),
             estabelecimento_id=estabelecimento.id
         )
         session.add(usuario_admin)

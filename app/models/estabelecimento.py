@@ -33,9 +33,10 @@ class Estabelecimento(EstabelecimentoBase, table=True):
         sa_column=Column(JSON),
         default_factory=dias_default
     )
+    slug: str = Field(default=None, unique=True, index=True)
 
     esta_aberto: bool = Field(default=False)
-    ativo: bool = Field(default=False)
+    ativo: bool = Field(default=True)
 
     categorias: List["CategoriaProduto"] = Relationship(back_populates="estabelecimento")
     usuarios: List["Usuario"] = Relationship( back_populates="estabelecimento" )

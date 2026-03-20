@@ -3,14 +3,15 @@ from fastapi import FastAPI
 from .database.engine import create_db_and_tables
 from .core.config import settings
 from .auth.router import router as autenticacao_router
-from .api.v1.estabelecimento import router as estabelecimento_router
-from .api.v1.categoria_produto import router as categ_produto_router
-from .api.v1.produto import router as produto_router
-from .api.v1.grupo_adicional import router as grupo_adicional_router
-from .api.v1.adicional import router as adicional_router
-from .api.v1.pedido import router as pedido_router
-from .api.v1.comanda import router as comanda_router
-from .api.v1.mesa import router as mesa_router
+from .api.v1.admin.estabelecimento import router as estabelecimento_router
+from .api.v1.admin.categoria_produto import router as categ_produto_router
+from .api.v1.admin.produto import router as produto_router
+from .api.v1.admin.grupo_adicional import router as grupo_adicional_router
+from .api.v1.admin.adicional import router as adicional_router
+from .api.v1.admin.pedido import router as pedido_router
+from .api.v1.admin.comanda import router as comanda_router
+from .api.v1.admin.mesa import router as mesa_router
+from .api.v1.public.cardapio import router as cardapio_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,3 +35,6 @@ app.include_router(adicional_router, prefix="/api/v1/admin/produto/adicional", t
 app.include_router(pedido_router, prefix="/api/v1/admin/pedido", tags=["Pedido"])
 app.include_router(comanda_router, prefix="/api/v1/admin/comanda", tags=["Comanda"])
 app.include_router(mesa_router, prefix="/api/v1/admin/mesa", tags=["Mesa"])
+
+# Rotas Públicas
+app.include_router(cardapio_router, prefix="/api/v1/cardapio", tags=["Cardápio"])

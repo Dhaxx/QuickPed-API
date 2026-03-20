@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
-from ...schemas.mesa import MesaCreate, MesaRead, MesaUpdate
-from ...services.mesa import mesa_service
-from ...auth.dependencies import get_current_estabelecimento
-from ...database.engine import get_session
+from app.schemas.mesa import MesaCreate, MesaRead, MesaUpdate
+from app.services.mesa import mesa_service
+from app.auth.dependencies import get_current_estabelecimento
+from app.database.engine import get_session
 
 router = APIRouter()
 

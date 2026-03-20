@@ -1,18 +1,18 @@
 from fastapi import APIRouter, Depends, status
-from ...schemas.estabelecimento import EstabelecimentoCreate, EstabelecimentoRead, EstabelecimentoUpdate
-from ...services.estabelecimento import estabelecimento_service
-from ...database.engine import get_session
-from ...auth.dependencies import get_current_estabelecimento
+from app.schemas.estabelecimento import EstabelecimentoCreate, EstabelecimentoRead, EstabelecimentoUpdate
+from app.services.estabelecimento import estabelecimento_service
+from app.database.engine import get_session
+from app.auth.dependencies import get_current_estabelecimento
 
 router = APIRouter()
 
-# @router.post("/", response_model=EstabelecimentoRead, status_code=status.HTTP_201_CREATED)
-# def create_estabelecimento(
-#     data: EstabelecimentoCreate,
-#     session = Depends(get_session)
-# ):
-#     dados = data.model_dump()
-#     return estabelecimento_service.create(session, dados)
+@router.post("/", response_model=EstabelecimentoRead, status_code=status.HTTP_201_CREATED)
+def create_estabelecimento(
+    data: EstabelecimentoCreate,
+    session = Depends(get_session)
+):
+    dados = data.model_dump()
+    return estabelecimento_service.create(session, dados)
 
 # @router.get("/", response_model=list[EstabelecimentoRead], status_code=status.HTTP_200_OK)
 # def get_estabelecimentos(

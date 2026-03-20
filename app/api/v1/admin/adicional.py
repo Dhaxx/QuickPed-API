@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
-from ...schemas.produto import AdicionalCreate, AdicionalRead, AdicionalUpdate
-from ...services.produto import adicional_service
-from ...auth.dependencies import get_current_estabelecimento
-from ...database.engine import get_session
+from app.schemas.produto import AdicionalCreate, AdicionalRead, AdicionalUpdate
+from app.services.produto import adicional_service
+from app.auth.dependencies import get_current_estabelecimento
+from app.database.engine import get_session
 
 router = APIRouter()
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
-from ...schemas.pedido import PedidoCreate, PedidoRead, PedidoUpdate
-from ...services.pedido import pedido_service
-from ...auth.dependencies import get_current_estabelecimento
-from ...database.engine import get_session
+from app.schemas.pedido import PedidoCreate, PedidoRead, PedidoUpdate
+from app.services.pedido import pedido_service
+from app.auth.dependencies import get_current_estabelecimento
+from app.database.engine import get_session
 
 router = APIRouter()
 
