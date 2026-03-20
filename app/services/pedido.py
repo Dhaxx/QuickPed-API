@@ -7,6 +7,7 @@ from decimal import Decimal
 from app.services.produto import Produto
 from app.models.comanda import Comanda
 from app.models.mesa import Mesa
+from fastapi import HTTPException, status
 
 class PedidoService(BaseService[Pedido]):
     def create(self, session: Session, estabelecimento_id: int, data: PedidoCreate) -> Pedido:
@@ -121,6 +122,12 @@ class PedidoService(BaseService[Pedido]):
             )
         ).first()
 
+        if not mesa:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Mesa não encontrada"
+            )
+
         comanda = session.exec(
             select(Comanda).where(
                 Comanda.numero_mesa == mesa.numero,
@@ -128,6 +135,12 @@ class PedidoService(BaseService[Pedido]):
                 Comanda.status == 'aberta'
             )
         ).first()
+
+        if not comanda:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Nenhuma comanda aberta para esta mesa"
+            )
 
         return session.exec(
             select(Pedido).where(
