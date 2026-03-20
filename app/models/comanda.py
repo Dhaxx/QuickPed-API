@@ -15,7 +15,7 @@ class ComandaBase(SQLModel):
 
 class Comanda(ComandaBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    total: Decimal = Field(default=0.00, sa_column=Column(Numeric(10, 2), CheckConstraint("preco >= 0", name="check_preco_positivo")))
+    total: Decimal = Field(default=0.00, sa_column=Column(Numeric(10, 2), CheckConstraint("total >= 0", name="check_comanda_total_positivo")))
     estabelecimento_id: int = Field(foreign_key="estabelecimento.id")
 
     estabelecimento: "Estabelecimento" = Relationship(back_populates="comandas")

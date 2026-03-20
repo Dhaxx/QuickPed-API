@@ -22,7 +22,9 @@ class ProdutoUpdate(SQLModel):
     ativo: Optional[bool] = None
 
     @field_validator("preco")
-    def preco_nao_negativo(cls, v: Decimal):
+    def preco_nao_negativo(cls, v: Optional[Decimal]):
+        if v is None:
+            return v
         if v < 0:
             raise ValueError("O preço não pode ser negativo")
         return v

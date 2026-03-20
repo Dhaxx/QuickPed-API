@@ -24,6 +24,7 @@ app = FastAPI(
     title=settings.app_name, 
 )
 
+# Rotas Administrativas
 app.include_router(autenticacao_router, prefix="/api/v1/admin/autenticacao", tags=["Autenticacao"])
 app.include_router(estabelecimento_router, prefix="/api/v1/admin/estabelecimento", tags=["Estabelecimento"])
 app.include_router(categ_produto_router, prefix="/api/v1/admin/categoria-produto", tags=["Categoria Produto"])

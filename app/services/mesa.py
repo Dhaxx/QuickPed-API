@@ -10,7 +10,7 @@ class MesaService(BaseService[Mesa]):
             raise ValueError("Mesa não encontrada")
         return mesa
     
-    def create(self, session, model_data):
+    def create(self, session: Session, model_data: dict) -> Mesa:
         model_data['criado_em'] = datetime.now(timezone.utc)
         return super().create(session, model_data)
     

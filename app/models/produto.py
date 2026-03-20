@@ -7,7 +7,7 @@ from .estabelecimento import Estabelecimento
 class ProdutoBase(SQLModel):
     nome: str
     descricao: Optional[str] = None
-    preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_positivo")))
+    preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_produto_positivo")))
     imagem_url: Optional[str] = None
     categoria_id: int = Field(foreign_key="categoria_produto.id", index=True)
 
@@ -36,7 +36,7 @@ class GrupoAdicional(GrupoAdicionalBase, table=True):
 
 class AdicionalBase(SQLModel):
     nome: str
-    preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_positivo")))
+    preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_adicional_preco_positivo")))
 
 class Adicional(AdicionalBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
