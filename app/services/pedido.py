@@ -6,6 +6,7 @@ from sqlmodel import Session, select
 from decimal import Decimal
 from app.services.produto import Produto
 from app.models.comanda import Comanda
+from app.models.mesa import Mesa
 
 class PedidoService(BaseService[Pedido]):
     def create(self, session: Session, estabelecimento_id: int, data: PedidoCreate) -> Pedido:
@@ -27,6 +28,7 @@ class PedidoService(BaseService[Pedido]):
                 numero_mesa=data.numero_mesa,
                 status='aberta'
             )
+            session.add(comanda)
             session.flush()
 
         for item in data.itens:
@@ -79,15 +81,27 @@ class PedidoService(BaseService[Pedido]):
             )
 
             itens_processados.append(item_pedido)
-
             total_pedido += subtotal_item
+
+        itens_json_serializavel = [
+            {
+                "produto_id": i.produto_id,
+                "nome_produto": i.nome_produto,
+                "preco_unitario": float(i.preco_unitario),
+                "quantidade": i.quantidade,
+                "adicionais": [
+                    {"nome": a.nome, "preco": float(a.preco)} for a in i.adicionais
+                ]
+            }
+            for i in itens_processados
+        ]
 
         pedido = Pedido(
             estabelecimento_id=estabelecimento_id,
             comanda_id=comanda.id,
             nome_cliente=data.nome_cliente,
             numero_mesa=data.numero_mesa,
-            itens=itens_processados,
+            itens=itens_json_serializavel,
             total=total_pedido
         )
 
@@ -98,5 +112,28 @@ class PedidoService(BaseService[Pedido]):
         session.refresh(pedido)
 
         return pedido
+    
+    def get_by_comanda(self, session: Session, mesa_token: str, estabelecimento_id: int) -> list[Pedido]:
+        mesa = session.exec(
+            select(Mesa).where(
+                Mesa.token == mesa_token,
+                Mesa.estabelecimento_id == estabelecimento_id
+            )
+        ).first()
+
+        comanda = session.exec(
+            select(Comanda).where(
+                Comanda.numero_mesa == mesa.numero,
+                Comanda.estabelecimento_id == estabelecimento_id,
+                Comanda.status == 'aberta'
+            )
+        ).first()
+
+        return session.exec(
+            select(Pedido).where(
+                Pedido.comanda_id == comanda.id,
+                Pedido.estabelecimento_id == estabelecimento_id
+            )
+        ).all()
     
 pedido_service = PedidoService(Pedido)

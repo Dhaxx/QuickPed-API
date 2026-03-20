@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 class UsuarioBase(SQLModel):
     usuario: str
@@ -9,5 +9,5 @@ class Usuario(UsuarioBase, table=True):
     id: int = Field(default=None, primary_key=True)
     senha_hash: str
     ativo: bool = Field(default=True)
-    criado_em: datetime = Field(default_factory=lambda: datetime.now())
+    criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     estabelecimento: "Estabelecimento" = Relationship(back_populates="usuarios")

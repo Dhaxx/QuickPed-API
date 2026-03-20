@@ -1,5 +1,4 @@
 from sqlmodel import Session, text
-import json
 from app.schemas.cardapio import CardapioPublicResponse, CategoriaPublic, ProdutoPublic, AdicionalPublic
 
 SQL_CARDAPIO_JSON = """
@@ -8,6 +7,7 @@ select
     cp.nome as nome_categoria,
     cp.ordem as ordem_categoria,
     p.id as produto_id,
+    p.imagem_url,
     p.nome as nome_produto,
     p.descricao,
     p.preco as preco_produto,
@@ -56,8 +56,9 @@ class CardapioService:
                 nome=r.nome_produto,
                 descricao=r.descricao,
                 preco=r.preco_produto,
+                imagem_url=r.imagem_url,
                 disponivel=True,
-                adicionais=[AdicionalPublic(**a) for a in json.loads(r.adicionais)]
+                adicionais=[AdicionalPublic(**a) for a in r.adicionais]
             )
 
             categorias_dict[cat_id]["produtos"].append(produto)
@@ -65,4 +66,9 @@ class CardapioService:
         # Transformar dict em lista
         categorias_list = [CategoriaPublic(**cat) for cat in categorias_dict.values()]
 
-        return CardapioPublicResponse(categorias=categorias_list)
+        estabelecimento = session.exec(
+            text("select nome, esta_aberto aberto from estabelecimento where id = :id"), 
+            params={"id": estabelecimento_id}
+        ).first()
+
+        return CardapioPublicResponse(estabelecimento=estabelecimento, categorias=categorias_list)

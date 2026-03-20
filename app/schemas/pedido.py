@@ -1,4 +1,4 @@
-from ..models.pedido import PedidoBase, SQLModel, Optional, Decimal, List, PedidoItem, Field, JSON, Column, PedidoItemAdicional
+from ..models.pedido import PedidoBase, SQLModel, Optional, Decimal, List, PedidoItem, Field, JSON, Column, PedidoItemAdicional, datetime, timezone
 
 class PedidoCreate(PedidoBase):
     pass
@@ -7,7 +7,7 @@ class PedidoRead(PedidoBase):
     id: int
     status: str
     total: Decimal
-    criado_em: str
+    criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     itens: list[PedidoItem] = Field(default_factory=list)
 
 class PedidoUpdate(SQLModel):

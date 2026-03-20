@@ -7,9 +7,9 @@ from sqlmodel import Session, select
 
 router = APIRouter()
 
-@router.get("/{slug_estabelecimento}", response_model=CardapioPublicResponse, status_code=status.HTTP_200_OK)
-def get_cardapio(session: Session = Depends(get_session), slug_estabelecimento: str = None):
-    stmt = select(Estabelecimento.id).where(Estabelecimento.slug == slug_estabelecimento)
+@router.get("/", response_model=CardapioPublicResponse, status_code=status.HTTP_200_OK)
+def get_cardapio(session: Session = Depends(get_session), slug: str = None):
+    stmt = select(Estabelecimento.id).where(Estabelecimento.slug == slug)
     estabelecimento_id = session.exec(stmt).first()
 
 

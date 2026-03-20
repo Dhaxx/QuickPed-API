@@ -5,9 +5,8 @@ class CardapioPublicResponse(SQLModel):
     categorias: list["CategoriaPublic"]
 
 class EstabelecimentoPublic(SQLModel):
-    id: int
     nome: str
-    status: str  # "aberto" | "fechado"
+    aberto: bool  # "aberto" | "fechado"
 
 class CategoriaPublic(SQLModel):
     id: int

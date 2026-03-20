@@ -12,6 +12,7 @@ from .api.v1.admin.pedido import router as pedido_router
 from .api.v1.admin.comanda import router as comanda_router
 from .api.v1.admin.mesa import router as mesa_router
 from .api.v1.public.cardapio import router as cardapio_router
+from .api.v1.public.pedido import router as public_pedido_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,15 +27,16 @@ app = FastAPI(
 )
 
 # Rotas Administrativas
-app.include_router(autenticacao_router, prefix="/api/v1/admin/autenticacao", tags=["Autenticacao"])
-app.include_router(estabelecimento_router, prefix="/api/v1/admin/estabelecimento", tags=["Estabelecimento"])
-app.include_router(categ_produto_router, prefix="/api/v1/admin/categoria-produto", tags=["Categoria Produto"])
-app.include_router(produto_router, prefix="/api/v1/admin/produto", tags=["Produto"])
-app.include_router(grupo_adicional_router, prefix="/api/v1/admin/produto/grupo-adicional", tags=["Grupo Adicional"])
-app.include_router(adicional_router, prefix="/api/v1/admin/produto/adicional", tags=["Adicional"])
-app.include_router(pedido_router, prefix="/api/v1/admin/pedido", tags=["Pedido"])
-app.include_router(comanda_router, prefix="/api/v1/admin/comanda", tags=["Comanda"])
-app.include_router(mesa_router, prefix="/api/v1/admin/mesa", tags=["Mesa"])
+app.include_router(autenticacao_router, prefix="/api/v1/admin/autenticacao", tags=["Admin - Autenticacao"])
+app.include_router(estabelecimento_router, prefix="/api/v1/admin/estabelecimento", tags=["Admin - Estabelecimento"])
+app.include_router(categ_produto_router, prefix="/api/v1/admin/categoria-produto", tags=["Admin - Categoria Produto"])
+app.include_router(produto_router, prefix="/api/v1/admin/produto", tags=["Admin - Produto"])
+app.include_router(grupo_adicional_router, prefix="/api/v1/admin/produto/grupo-adicional", tags=["Admin - Grupo Adicional"])
+app.include_router(adicional_router, prefix="/api/v1/admin/produto/adicional", tags=["Admin - Adicional"])
+app.include_router(pedido_router, prefix="/api/v1/admin/pedido", tags=["Admin - Pedido"])
+app.include_router(comanda_router, prefix="/api/v1/admin/comanda", tags=["Admin - Comanda"])
+app.include_router(mesa_router, prefix="/api/v1/admin/mesa", tags=["Admin - Mesa"])
 
 # Rotas Públicas
-app.include_router(cardapio_router, prefix="/api/v1/cardapio", tags=["Cardápio"])
+app.include_router(cardapio_router, prefix="/api/v1/{slug}/cardapio", tags=["Public - Cardápio"])
+app.include_router(public_pedido_router, prefix="/api/v1/{slug}/pedido", tags=["Public - Pedido"])
