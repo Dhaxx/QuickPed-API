@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from .database.engine import create_db_and_tables
 from .core.config import settings
 from .auth.router import router as autenticacao_router
@@ -24,6 +25,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     lifespan=lifespan, 
     title=settings.app_name, 
+)
+
+# Configuração de CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todas as origens (ajuste conforme necessário)
+    allow_methods=["*"],  # Permite todos os métodos HTTP
+    allow_headers=["*"],  # Permite todos os headers
 )
 
 # Rotas Administrativas

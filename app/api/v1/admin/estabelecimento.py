@@ -14,11 +14,12 @@ def create_estabelecimento(
     dados = data.model_dump()
     return estabelecimento_service.create(session, dados)
 
-# @router.get("/", response_model=list[EstabelecimentoRead], status_code=status.HTTP_200_OK)
-# def get_estabelecimentos(
-#     session = Depends(get_session)
-# ):
-#     return estabelecimento_service.get(session)
+@router.get("/", response_model=EstabelecimentoRead, status_code=status.HTTP_200_OK)
+def get_estabelecimento(
+    session = Depends(get_session),
+    estabelecimento_id: int = Depends(get_current_estabelecimento)
+):
+    return estabelecimento_service.get(session, estabelecimento_id)
 
 # @router.get("/{estabelecimento_id}", response_model=EstabelecimentoRead, status_code=status.HTTP_200_OK)
 # def get_estabelecimento(
@@ -34,7 +35,7 @@ def update_estabelecimento(
     session = Depends(get_session)
 ):
     dados = data.model_dump(exclude_unset=True)
-    return estabelecimento_service.update(session, dados, estabelecimento_id)
+    return estabelecimento_service.update(session, estabelecimento_id, dados)
 
 # @router.delete("/{estabelecimento_id}", response_model=EstabelecimentoRead, status_code=status.HTTP_200_OK)
 # def delete_estabelecimento(
