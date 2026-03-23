@@ -85,7 +85,8 @@ class PedidoService(BaseService[Pedido]):
             nome_cliente=data.nome_cliente,
             numero_mesa=data.numero_mesa,
             itens=itens_json_serializavel,
-            total=total_pedido
+            total=total_pedido,
+            obs=data.obs
         )
 
         comanda.total += total_pedido

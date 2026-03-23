@@ -7,7 +7,6 @@ from .estabelecimento import Estabelecimento
 class StatusComanda(str, Enum):
     ABERTA = "aberta"
     FECHADA = "fechada"
-    PAGA = "paga"
 
 class ComandaBase(SQLModel):
     numero_mesa: int = Field(index=True)

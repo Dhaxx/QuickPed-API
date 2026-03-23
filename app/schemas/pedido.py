@@ -5,13 +5,14 @@ class PedidoCreate(PedidoBase):
 
 class PedidoRead(PedidoBase):
     id: int
+    obs: Optional[str] = None
     status: str
     total: Decimal
     criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     itens: list[PedidoItem] = Field(default_factory=list)
 
 class PedidoUpdate(SQLModel):
-    status: Optional[str] = None
+    status: str
 
 class PedidoItemCreate(SQLModel):
     produto_id: int

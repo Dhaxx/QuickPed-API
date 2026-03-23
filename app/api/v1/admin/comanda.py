@@ -10,6 +10,10 @@ router = APIRouter()
 def get_comanda( session=Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
     return comanda_service.get(session, estabelecimento_id)
 
-@router.get("/{numero_mesa}", response_model=ComandaRead, status_code=status.HTTP_200_OK)
-def get_mesa_comanda(numero_mesa: int, session=Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
-    return comanda_service.get_by_mesa(session, numero_mesa, estabelecimento_id)
+# @router.get("/{numero_mesa}", response_model=ComandaRead, status_code=status.HTTP_200_OK)
+# def get_mesa_comanda(numero_mesa: int, session=Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
+#     return comanda_service.get_by_mesa(session, numero_mesa, estabelecimento_id)
+
+@router.put("/", response_model=ComandaRead, status_code=status.HTTP_201_CREATED)
+def update_comanda(comanda_id: int, session=Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
+    return comanda_service.fechar_comanda(session, comanda_id, estabelecimento_id)

@@ -45,5 +45,23 @@ class ComandaService(BaseService[Comanda]):
         self.recalcular_total(session, numero_mesa, estabelecimento_id)
 
         return comanda
+    
+    def fechar_comanda(self, session: Session, comanda_id: int, estabelecimento_id: int):
+        comanda = session.exec(
+            select(Comanda)
+            .where(
+                Comanda.id == comanda_id,
+                Comanda.estabelecimento_id == estabelecimento_id,
+                Comanda.status == 'aberta'
+            )
+        ).first()
+        if not comanda:
+            raise ValueError("Comanda não encontrada")
+        
+        comanda.status = 'fechada'
+        session.add(comanda)
+        session.commit()
+        session.refresh(comanda)
+        return comanda
 
 comanda_service = ComandaService(Comanda)
