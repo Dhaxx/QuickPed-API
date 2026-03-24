@@ -67,7 +67,7 @@ class CardapioService:
         categorias_list = [CategoriaPublic(**cat) for cat in categorias_dict.values()]
 
         estabelecimento = session.exec(
-            text("select nome, esta_aberto aberto from estabelecimento where id = :id"), 
+            text("select nome, esta_aberto aberto, slug, logo_url from estabelecimento where id = :id"), 
             params={"id": estabelecimento_id}
         ).first()
 

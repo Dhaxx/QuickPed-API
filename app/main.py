@@ -12,6 +12,7 @@ from .api.v1.admin.adicional import router as adicional_router
 from .api.v1.admin.pedido import router as pedido_router
 from .api.v1.admin.comanda import router as comanda_router
 from .api.v1.admin.mesa import router as mesa_router
+from .api.v1.public.mesa import router as public_mesa_router
 from .api.v1.public.cardapio import router as cardapio_router
 from .api.v1.public.pedido import router as public_pedido_router
 
@@ -49,3 +50,4 @@ app.include_router(mesa_router, prefix="/api/v1/admin/mesa", tags=["Admin - Mesa
 # Rotas Públicas
 app.include_router(cardapio_router, prefix="/api/v1/{slug}/cardapio", tags=["Public - Cardápio"])
 app.include_router(public_pedido_router, prefix="/api/v1/{slug}/pedido", tags=["Public - Pedido"])
+app.include_router(public_mesa_router, prefix="/api/v1/{slug}/mesa", tags=["Public - Mesa"])

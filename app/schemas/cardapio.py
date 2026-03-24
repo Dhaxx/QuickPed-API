@@ -7,6 +7,8 @@ class CardapioPublicResponse(SQLModel):
 class EstabelecimentoPublic(SQLModel):
     nome: str
     aberto: bool  # "aberto" | "fechado"
+    slug: str
+    logo_url: str | None
 
 class CategoriaPublic(SQLModel):
     id: int

@@ -9,6 +9,8 @@ class EstabelecimentoRead(EstabelecimentoBase):
     telefone: str
     dias_funcionamento: List[DiaFuncionamento]
     esta_aberto: bool
+    slug: str
+    logo_url: Optional[str] = None
 
 class EstabelecimentoUpdate(SQLModel):
     nome: Optional[str] = None

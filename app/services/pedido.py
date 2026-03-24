@@ -14,6 +14,20 @@ class PedidoService(BaseService[Pedido]):
         itens_processados = []
         total_pedido = Decimal("0.00")
 
+        mesa = session.exec(
+            select(Mesa).where(
+                Mesa.numero == data.numero_mesa,
+                Mesa.estabelecimento_id == estabelecimento_id,
+                Mesa.ativa == True
+            )
+        ).first()
+
+        if not mesa:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Mesa não encontrada"
+            )
+
         # Verifica se tem comanda aberta
         comanda = session.exec(
             select(Comanda).where(
