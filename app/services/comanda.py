@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from app.models.comanda import Comanda
 from app.models.pedido import Pedido
 from app.services.base import BaseService
@@ -58,6 +60,17 @@ class ComandaService(BaseService[Comanda]):
         if not comanda:
             raise ValueError("Comanda não encontrada")
         
+        pedidos_em_aberto = session.exec(
+            select(Pedido)
+            .where(
+            Pedido.comanda_id == comanda_id,
+            Pedido.status not in ("Cancelado", "Entregue")
+            )
+        ).all()
+
+        if pedidos_em_aberto:
+            raise HTTPException(status_code=409, detail="Não é possível fechar a comanda. Existem pedidos em aberto.")
+
         comanda.status = 'fechada'
         session.add(comanda)
         session.commit()
