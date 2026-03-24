@@ -64,7 +64,7 @@ class ComandaService(BaseService[Comanda]):
             select(Pedido)
             .where(
             Pedido.comanda_id == comanda_id,
-            Pedido.status not in ("Cancelado", "Entregue")
+            Pedido.status.not_in(("CANCELADO", "ENTREGUE"))
             )
         ).all()
 
