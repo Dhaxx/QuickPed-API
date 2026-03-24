@@ -16,3 +16,4 @@ class EstabelecimentoUpdate(SQLModel):
     telefone: Optional[str] = None
     email: Optional[EmailStr] = None
     logo_url: Optional[str] = None
+    esta_aberto: Optional[bool] = None
