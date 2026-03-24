@@ -15,6 +15,7 @@ from .api.v1.admin.mesa import router as mesa_router
 from .api.v1.public.mesa import router as public_mesa_router
 from .api.v1.public.cardapio import router as cardapio_router
 from .api.v1.public.pedido import router as public_pedido_router
+from .api.v1.public.comanda import router as public_comanda_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,3 +52,4 @@ app.include_router(mesa_router, prefix="/api/v1/admin/mesa", tags=["Admin - Mesa
 app.include_router(cardapio_router, prefix="/api/v1/{slug}/cardapio", tags=["Public - Cardápio"])
 app.include_router(public_pedido_router, prefix="/api/v1/{slug}/pedido", tags=["Public - Pedido"])
 app.include_router(public_mesa_router, prefix="/api/v1/{slug}/mesa", tags=["Public - Mesa"])
+app.include_router(public_comanda_router, prefix="/api/v1/{slug}/comanda", tags=["Public - Comanda"])

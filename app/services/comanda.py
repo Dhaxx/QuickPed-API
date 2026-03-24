@@ -2,6 +2,7 @@ from fastapi import HTTPException
 
 from app.models.comanda import Comanda
 from app.models.pedido import Pedido
+from app.models.mesa import Mesa
 from app.services.base import BaseService
 from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
@@ -17,7 +18,7 @@ class ComandaService(BaseService[Comanda]):
             )
         ).first()
         if not comanda:
-            raise ValueError("Comanda não encontrada")
+            raise HTTPException(status_code=404, detail="Comanda não encontrada")
         
         total = session.exec(
             select(Pedido).where(Pedido.comanda_id == comanda.id, Pedido.status != "Cancelado")
@@ -30,21 +31,26 @@ class ComandaService(BaseService[Comanda]):
         session.refresh(comanda)
         return
 
-    def get_by_mesa(self, session, numero_mesa: int, estabelecimento_id: int) -> Comanda:
+    def get_by_mesa(self, session, token: str) -> Comanda:
+        mesa = session.exec(
+            select(Mesa)
+            .where(Mesa.token == token)
+        ).first()
+
         comanda = session.exec(
             select(Comanda)
             .where(
-                Comanda.numero_mesa == numero_mesa,
-                Comanda.estabelecimento_id == estabelecimento_id,
+                Comanda.numero_mesa == mesa.numero,
+                Comanda.estabelecimento_id == mesa.estabelecimento_id,
                 Comanda.status == 'aberta'
             )
             .options(selectinload(Comanda.pedidos))
         ).first()
 
         if comanda is None:
-            raise ValueError("Comanda não encontrada")
+            raise HTTPException(status_code=404, detail="Comanda não encontrada")
 
-        self.recalcular_total(session, numero_mesa, estabelecimento_id)
+        self.recalcular_total(session, mesa.numero, mesa.estabelecimento_id)
 
         return comanda
     
@@ -58,7 +64,7 @@ class ComandaService(BaseService[Comanda]):
             )
         ).first()
         if not comanda:
-            raise ValueError("Comanda não encontrada")
+            raise HTTPException(status_code=404, detail="Comanda não encontrada")
         
         pedidos_em_aberto = session.exec(
             select(Pedido)
