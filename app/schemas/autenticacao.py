@@ -15,5 +15,8 @@ class UsuarioCreate(UsuarioBase):
     senha: str
 
 class UsuarioRead(UsuarioBase):
+    id: int
     usuario: str
     estabelecimento_id: int
+    ativo: bool
+    admin: bool
