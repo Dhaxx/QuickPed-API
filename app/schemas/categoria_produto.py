@@ -15,3 +15,4 @@ class CategoriaProdutoUpdate(SQLModel):
     icone: Optional[str] = None
     ordem: Optional[int] = None
     ativo: Optional[bool] = None
+    produzido_por: Optional[int] = None

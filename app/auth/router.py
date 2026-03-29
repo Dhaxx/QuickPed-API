@@ -33,3 +33,7 @@ def registrar(data: UsuarioCreate, session: Session = Depends(get_session), esta
         raise HTTPException(status_code=400, detail="Erro ao registrar usuário")
 
     return usuario
+
+@router.get("/usuarios", response_model=list[UsuarioRead])
+def listar_usuarios(session: Session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
+    return autenticacao_service.get(session, estabelecimento_id)

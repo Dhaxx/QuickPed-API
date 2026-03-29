@@ -7,6 +7,7 @@ class CategoriaProdutoBase(SQLModel):
     icone: Optional[str] = None
     ordem: int = Field(default=0)
     estabelecimento_id: int = Field(foreign_key="estabelecimento.id", index=True)
+    produzido_por: Optional[int] = Field(default=None, foreign_key="usuario.id", index=True)
 
 class CategoriaProduto(CategoriaProdutoBase, table=True):
     __tablename__ = 'categoria_produto'
@@ -16,3 +17,4 @@ class CategoriaProduto(CategoriaProdutoBase, table=True):
 
     estabelecimento: "Estabelecimento" = Relationship(back_populates="categorias")
     produtos: list["Produto"] = Relationship(back_populates="categoria")
+    produzido_por_usuario: Optional["Usuario"] = Relationship(back_populates="categorias")

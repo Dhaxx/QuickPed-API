@@ -10,4 +10,8 @@ class Usuario(UsuarioBase, table=True):
     senha_hash: str
     ativo: bool = Field(default=True)
     criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    admin: bool = Field(default=False)  
+
     estabelecimento: "Estabelecimento" = Relationship(back_populates="usuarios")
+    produtos: list["Produto"] = Relationship(back_populates="produzido_por_usuario")
+    categorias: list["CategoriaProduto"] = Relationship(back_populates="produzido_por_usuario")

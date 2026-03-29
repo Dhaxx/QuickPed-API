@@ -10,6 +10,7 @@ class ProdutoBase(SQLModel):
     preco: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_produto_positivo")))
     imagem_url: Optional[str] = None
     categoria_id: int = Field(foreign_key="categoria_produto.id", index=True)
+    produzido_por: Optional[int] = Field(default=None, foreign_key="usuario.id", index=True)
 
 class Produto(ProdutoBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -19,6 +20,7 @@ class Produto(ProdutoBase, table=True):
 
     grupos: List["GrupoAdicional"] = Relationship(back_populates="produto")
     categoria: Optional["CategoriaProduto"] = Relationship(back_populates="produtos")
+    produzido_por_usuario: Optional["Usuario"] = Relationship(back_populates="produtos")
 
 class GrupoAdicionalBase(SQLModel):
     nome: str
