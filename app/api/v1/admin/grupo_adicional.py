@@ -9,9 +9,7 @@ router = APIRouter()
 # Rotas dos Grupos de Adicional
 @router.post("/", response_model=GrupoAdicionalRead, status_code=status.HTTP_201_CREATED)
 def create_grupo_adicional(data: GrupoAdicionalCreate, session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
-    dados = data.model_dump()
-    dados["estabelecimento_id"] = estabelecimento_id
-    return grupo_adicional_service.create(session, dados)
+    return grupo_adicional_service.create(session, estabelecimento_id, data)
 
 @router.get("/", response_model=list[GrupoAdicionalRead], status_code=status.HTTP_200_OK)
 def get_grupos_adicionais(session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento), produto_id = int):

@@ -31,10 +31,11 @@ class ProdutoUpdate(SQLModel):
 
 
 class GrupoAdicionalCreate(GrupoAdicionalBase):
-    pass
+    adicionais: Optional[list["AdicionalBase"]] = None
 
 class GrupoAdicionalRead(GrupoAdicionalBase):
     id: int
+    adicionais: list["AdicionalRead"] = []
 
 class GrupoAdicionalUpdate(SQLModel):
     nome: Optional[str] = None
@@ -56,7 +57,6 @@ class AdicionalRead(AdicionalBase):
 class AdicionalUpdate(SQLModel):
     nome: Optional[str] = None
     preco: Optional[Decimal] = None
-    grupo_id: Optional[int] = None
 
     @field_validator("preco")
     def preco_nao_negativo(cls, v: Decimal):
