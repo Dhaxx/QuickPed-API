@@ -14,8 +14,8 @@ def create_grupo_adicional(data: GrupoAdicionalCreate, session = Depends(get_ses
     return grupo_adicional_service.create(session, dados)
 
 @router.get("/", response_model=list[GrupoAdicionalRead], status_code=status.HTTP_200_OK)
-def get_grupos_adicionais(session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
-    return grupo_adicional_service.get(session, estabelecimento_id)
+def get_grupos_adicionais(session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento), produto_id = int):
+    return grupo_adicional_service.get(session, estabelecimento_id, produto_id)
 
 @router.put("/", response_model=GrupoAdicionalRead, status_code=status.HTTP_200_OK)
 def update_grupo_adicional(grupo_id: int, data: GrupoAdicionalUpdate, session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):

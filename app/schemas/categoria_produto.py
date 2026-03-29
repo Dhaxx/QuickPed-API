@@ -8,6 +8,7 @@ class CategoriaProdutoRead(CategoriaProdutoBase):
     nome: str
     icone: Optional[str] = None
     estabelecimento_id: int
+    ativo: bool
 
 class CategoriaProdutoUpdate(SQLModel):
     nome: Optional[str] = None

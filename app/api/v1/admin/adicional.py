@@ -14,8 +14,8 @@ def create_adicional(data: AdicionalCreate, session = Depends(get_session), esta
     return adicional_service.create(session, dados)
 
 @router.get("/", response_model=list[AdicionalRead], status_code=status.HTTP_200_OK)
-def get_adicionais(session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
-    return adicional_service.get(session, estabelecimento_id)
+def get_adicionais(session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento), grupo_id = int):
+    return adicional_service.get(session, estabelecimento_id, grupo_id)
 
 @router.put("/", response_model=AdicionalRead, status_code=status.HTTP_200_OK)
 def update_adicional(adicional_id: int, data: AdicionalUpdate, session = Depends(get_session), estabelecimento_id: int = Depends(get_current_estabelecimento)):
