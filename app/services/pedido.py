@@ -93,11 +93,24 @@ class PedidoService(BaseService[Pedido]):
                 "adicionais": adicionais_serializaveis
             })
 
+        if data.mesa_token:
+            mesa = session.exec(
+                select(Mesa).where(Mesa.token == data.mesa_token, Mesa.ativa == True)
+            ).first()
+            if not mesa:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Mesa não encontrada"
+                )
+            numero_mesa = mesa.numero
+        else:
+            numero_mesa = data.numero_mesa
+
         pedido = Pedido(
             estabelecimento_id=estabelecimento_id,
             comanda_id=comanda.id,
             nome_cliente=data.nome_cliente,
-            numero_mesa=data.numero_mesa,
+            numero_mesa=numero_mesa,
             itens=itens_json_serializavel,
             total=total_pedido,
             obs=data.obs

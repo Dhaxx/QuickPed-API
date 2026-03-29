@@ -1,7 +1,7 @@
 from ..models.pedido import PedidoBase, SQLModel, Optional, Decimal, List, PedidoItem, Field, datetime, timezone
 
 class PedidoCreate(PedidoBase):
-    pass
+    mesa_token: Optional[str] = None
 
 class PedidoRead(PedidoBase):
     id: int
