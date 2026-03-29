@@ -7,6 +7,7 @@ from decimal import Decimal
 from app.services.produto import Produto
 from app.models.comanda import Comanda
 from app.models.mesa import Mesa
+from app.models.usuario import Usuario
 from fastapi import HTTPException, status
 
 class PedidoService(BaseService[Pedido]):
@@ -64,12 +65,20 @@ class PedidoService(BaseService[Pedido]):
                 for adicional in item.adicionais:
                     subtotal_item += adicional.preco * item.quantidade
 
+            if produto.produzido_por is not None:
+                produtor = session.exec(
+                    select(Usuario.usuario).where(Usuario.id == produto.produzido_por)
+                ).first()
+            else:
+                produtor = None
+
             item_pedido = PedidoItem(
                 produto_id=produto.id,
                 nome_produto=produto.nome,
                 preco_unitario=preco_unitario,
                 quantidade=item.quantidade,
-                adicionais=item.adicionais
+                adicionais=item.adicionais,
+                produzido_por=produtor
             )
 
             itens_processados.append(item_pedido)
@@ -85,12 +94,14 @@ class PedidoService(BaseService[Pedido]):
                     "nome": a.nome,
                     "preco": float(a.preco)
                 })
+
             itens_json_serializavel.append({
                 "produto_id": i.produto_id,
                 "nome_produto": i.nome_produto,
                 "preco_unitario": float(i.preco_unitario),
                 "quantidade": i.quantidade,
-                "adicionais": adicionais_serializaveis
+                "adicionais": adicionais_serializaveis,
+                "produzido_por": produtor if produtor else None
             })
 
         if data.mesa_token:

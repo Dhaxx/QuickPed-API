@@ -26,6 +26,7 @@ class PedidoItem(SQLModel):
     preco_unitario: Decimal = Field(sa_column=Column(Numeric(10,2), CheckConstraint("preco >= 0", name="check_preco_pedido_item_positivo"), default=Decimal('0.00')))
     quantidade: int
     adicionais: List[PedidoItemAdicional] = Field(default_factory=list)
+    produzido_por: Optional[str] = None
 
 
 class PedidoBase(SQLModel):
