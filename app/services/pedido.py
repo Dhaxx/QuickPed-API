@@ -8,6 +8,7 @@ from app.services.produto import Produto
 from app.models.comanda import Comanda
 from app.models.mesa import Mesa
 from app.models.usuario import Usuario
+from app.services.impressao import impressao_service
 from fastapi import HTTPException, status
 
 class PedidoService(BaseService[Pedido]):
@@ -101,7 +102,7 @@ class PedidoService(BaseService[Pedido]):
                 "preco_unitario": float(i.preco_unitario),
                 "quantidade": i.quantidade,
                 "adicionais": adicionais_serializaveis,
-                "produzido_por": produtor if produtor else None
+                "produzido_por": i.produzido_por
             })
 
         if data.mesa_token:
@@ -132,6 +133,8 @@ class PedidoService(BaseService[Pedido]):
         session.add(pedido)
         session.commit()
         session.refresh(pedido)
+
+        impressao_service.imprimir_pedido(session, pedido.id, estabelecimento_id)
 
         return pedido
     
