@@ -1,8 +1,8 @@
-from app.models.pedido import Pedido, PedidoItem, PedidoItemAdicional
+from app.models.pedido import Pedido, PedidoItem, PedidoItemAdicional, StatusPedido
 from app.models.produto import Adicional
 from app.services.base import BaseService
 from ..schemas.pedido import PedidoCreate
-from sqlmodel import Session, select
+from sqlmodel import Session, select, update, func
 from decimal import Decimal
 from app.services.produto import Produto
 from app.models.comanda import Comanda
@@ -11,8 +11,11 @@ from app.models.usuario import Usuario
 from app.services.impressao import impressao_service
 from fastapi import HTTPException, status
 
+
 class PedidoService(BaseService[Pedido]):
-    def create(self, session: Session, estabelecimento_id: int, data: PedidoCreate) -> Pedido:
+    def create(
+        self, session: Session, estabelecimento_id: int, data: PedidoCreate
+    ) -> Pedido:
         itens_processados = []
         total_pedido = Decimal("0.00")
 
@@ -20,30 +23,33 @@ class PedidoService(BaseService[Pedido]):
             select(Mesa).where(
                 Mesa.numero == data.numero_mesa,
                 Mesa.estabelecimento_id == estabelecimento_id,
-                Mesa.ativa == True
+                Mesa.ativa == True,
             )
         ).first()
 
         if not mesa:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mesa não encontrada"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Mesa não encontrada"
             )
 
-        # Verifica se tem comanda aberta
+        # Verifica se tem comanda aberta com lock (SELECT FOR UPDATE)
+        # Isso previne race condition onde duas requisições criam comandas duplicadas
+        # Usa nowait=False para esperar caso outra transação já esteja com lock
         comanda = session.exec(
-            select(Comanda).where(
-                Comanda.status == 'aberta',
+            select(Comanda)
+            .where(
+                Comanda.status == "aberta",
                 Comanda.numero_mesa == data.numero_mesa,
-                Comanda.estabelecimento_id == estabelecimento_id
+                Comanda.estabelecimento_id == estabelecimento_id,
             )
+            .with_for_update(nowait=False)
         ).first()
 
         if not comanda:
             comanda = Comanda(
                 estabelecimento_id=estabelecimento_id,
                 numero_mesa=data.numero_mesa,
-                status='aberta'
+                status="aberta",
             )
             session.add(comanda)
             session.flush()
@@ -52,7 +58,7 @@ class PedidoService(BaseService[Pedido]):
             produto = session.exec(
                 select(Produto).where(
                     Produto.id == item.produto_id,
-                    Produto.estabelecimento_id == estabelecimento_id
+                    Produto.estabelecimento_id == estabelecimento_id,
                 )
             ).first()
 
@@ -79,7 +85,7 @@ class PedidoService(BaseService[Pedido]):
                 preco_unitario=preco_unitario,
                 quantidade=item.quantidade,
                 adicionais=item.adicionais,
-                produzido_por=produtor
+                produzido_por=produtor,
             )
 
             itens_processados.append(item_pedido)
@@ -90,20 +96,24 @@ class PedidoService(BaseService[Pedido]):
             adicionais_serializaveis = []
             for a in i.adicionais:
                 # se a veio do banco, deve ter id
-                adicionais_serializaveis.append({
-                    "id": getattr(a, "id", None),  # <- aqui você coloca o id
-                    "nome": a.nome,
-                    "preco": float(a.preco)
-                })
+                adicionais_serializaveis.append(
+                    {
+                        "id": getattr(a, "id", None),  # <- aqui você coloca o id
+                        "nome": a.nome,
+                        "preco": float(a.preco),
+                    }
+                )
 
-            itens_json_serializavel.append({
-                "produto_id": i.produto_id,
-                "nome_produto": i.nome_produto,
-                "preco_unitario": float(i.preco_unitario),
-                "quantidade": i.quantidade,
-                "adicionais": adicionais_serializaveis,
-                "produzido_por": i.produzido_por
-            })
+            itens_json_serializavel.append(
+                {
+                    "produto_id": i.produto_id,
+                    "nome_produto": i.nome_produto,
+                    "preco_unitario": float(i.preco_unitario),
+                    "quantidade": i.quantidade,
+                    "adicionais": adicionais_serializaveis,
+                    "produzido_por": i.produzido_por,
+                }
+            )
 
         if data.mesa_token:
             mesa = session.exec(
@@ -111,8 +121,7 @@ class PedidoService(BaseService[Pedido]):
             ).first()
             if not mesa:
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Mesa não encontrada"
+                    status_code=status.HTTP_404_NOT_FOUND, detail="Mesa não encontrada"
                 )
             numero_mesa = mesa.numero
         else:
@@ -125,52 +134,72 @@ class PedidoService(BaseService[Pedido]):
             numero_mesa=numero_mesa,
             itens=itens_json_serializavel,
             total=total_pedido,
-            obs=data.obs
+            obs=data.obs,
         )
 
-        comanda.total += total_pedido
-        session.add(comanda)
+        # Update atômico do total da comanda
+        # IMPORTANTE: Isso previne race condition onde dois pedidos simultâneos
+        # podem sobrescrever o total um do outro ao invés de somar corretamente
+        # Sintaxe: UPDATE comanda SET total = total + :valor WHERE id = :id
+        comanda_id = comanda.id
+        session.exec(
+            update(Comanda)
+            .where(Comanda.id == comanda_id)
+            .values(total=Comanda.total + total_pedido)
+        )
+
         session.add(pedido)
         session.commit()
+
+        # Recarrega o pedido com os dados atualizados do banco
         session.refresh(pedido)
 
         impressao_service.imprimir_pedido(session, pedido.id, estabelecimento_id)
 
         return pedido
-    
-    def get_by_comanda(self, session: Session, mesa_token: str, estabelecimento_id: int) -> list[Pedido]:
+
+    def get_by_comanda(
+        self, session: Session, mesa_token: str, estabelecimento_id: int
+    ) -> list[Pedido]:
         mesa = session.exec(
             select(Mesa).where(
-                Mesa.token == mesa_token,
-                Mesa.estabelecimento_id == estabelecimento_id
+                Mesa.token == mesa_token, Mesa.estabelecimento_id == estabelecimento_id
             )
         ).first()
 
         if not mesa:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Mesa não encontrada"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Mesa não encontrada"
             )
 
         comanda = session.exec(
             select(Comanda).where(
                 Comanda.numero_mesa == mesa.numero,
                 Comanda.estabelecimento_id == estabelecimento_id,
-                Comanda.status == 'aberta'
+                Comanda.status == "aberta",
             )
         ).first()
 
         if not comanda:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Nenhuma comanda aberta para esta mesa"
+                detail="Nenhuma comanda aberta para esta mesa",
             )
 
         return session.exec(
             select(Pedido).where(
                 Pedido.comanda_id == comanda.id,
-                Pedido.estabelecimento_id == estabelecimento_id
+                Pedido.estabelecimento_id == estabelecimento_id,
             )
         ).all()
-    
+
+    def get_pendentes(self, session: Session, estabelecimento_id: int):
+        return session.exec(
+            select(Pedido).where(
+                Pedido.estabelecimento_id == estabelecimento_id,
+                Pedido.status == StatusPedido.PENDENTE,
+            )
+        ).all()
+
+
 pedido_service = PedidoService(Pedido)

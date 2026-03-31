@@ -11,4 +11,5 @@ dependencies = [
     "python-jose>=3.5.0",
     "sqlmodel>=0.0.37",
     "unidecode>=1.4.0",
+    "slowapi>=0.1.9",
 ]

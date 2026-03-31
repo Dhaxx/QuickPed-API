@@ -1,6 +1,10 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from .database.engine import create_db_and_tables
 from .core.config import settings
 from .auth.router import router as autenticacao_router
@@ -18,6 +22,9 @@ from .api.v1.public.cardapio import router as cardapio_router
 from .api.v1.public.pedido import router as public_pedido_router
 from .api.v1.public.comanda import router as public_comanda_router
 
+limiter = Limiter(key_func=get_remote_address)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Starting up...")
@@ -26,9 +33,20 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    lifespan=lifespan, 
-    title=settings.app_name, 
+    lifespan=lifespan,
+    title=settings.app_name,
 )
+
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Too many attempts. Please try again later."},
+    )
+
 
 # Configuração de CORS
 app.add_middleware(
@@ -39,19 +57,55 @@ app.add_middleware(
 )
 
 # Rotas Administrativas
-app.include_router(autenticacao_router, prefix="/api/v1/admin/autenticacao", tags=["Admin - Autenticacao"])
-app.include_router(estabelecimento_router, prefix="/api/v1/admin/estabelecimento", tags=["Admin - Estabelecimento"])
-app.include_router(categ_produto_router, prefix="/api/v1/admin/categoria-produto", tags=["Admin - Categoria Produto"])
-app.include_router(produto_router, prefix="/api/v1/admin/produto", tags=["Admin - Produto"])
-app.include_router(grupo_adicional_router, prefix="/api/v1/admin/produto/grupo-adicional", tags=["Admin - Grupo Adicional"])
-app.include_router(adicional_router, prefix="/api/v1/admin/produto/adicional", tags=["Admin - Adicional"])
-app.include_router(pedido_router, prefix="/api/v1/admin/pedido", tags=["Admin - Pedido"])
-app.include_router(comanda_router, prefix="/api/v1/admin/comanda", tags=["Admin - Comanda"])
+app.include_router(
+    autenticacao_router,
+    prefix="/api/v1/admin/autenticacao",
+    tags=["Admin - Autenticacao"],
+)
+app.include_router(
+    estabelecimento_router,
+    prefix="/api/v1/admin/estabelecimento",
+    tags=["Admin - Estabelecimento"],
+)
+app.include_router(
+    categ_produto_router,
+    prefix="/api/v1/admin/categoria-produto",
+    tags=["Admin - Categoria Produto"],
+)
+app.include_router(
+    produto_router, prefix="/api/v1/admin/produto", tags=["Admin - Produto"]
+)
+app.include_router(
+    grupo_adicional_router,
+    prefix="/api/v1/admin/produto/grupo-adicional",
+    tags=["Admin - Grupo Adicional"],
+)
+app.include_router(
+    adicional_router,
+    prefix="/api/v1/admin/produto/adicional",
+    tags=["Admin - Adicional"],
+)
+app.include_router(
+    pedido_router, prefix="/api/v1/admin/pedido", tags=["Admin - Pedido"]
+)
+app.include_router(
+    comanda_router, prefix="/api/v1/admin/comanda", tags=["Admin - Comanda"]
+)
 app.include_router(mesa_router, prefix="/api/v1/admin/mesa", tags=["Admin - Mesa"])
-app.include_router(impressao_router, prefix="/api/v1/admin/Impressao", tags=["Admin - Impressao"])
+app.include_router(
+    impressao_router, prefix="/api/v1/admin/Impressao", tags=["Admin - Impressao"]
+)
 
 # Rotas Públicas
-app.include_router(cardapio_router, prefix="/api/v1/{slug}/cardapio", tags=["Public - Cardápio"])
-app.include_router(public_pedido_router, prefix="/api/v1/{slug}/pedido", tags=["Public - Pedido"])
-app.include_router(public_mesa_router, prefix="/api/v1/{slug}/mesa", tags=["Public - Mesa"])
-app.include_router(public_comanda_router, prefix="/api/v1/{slug}/comanda", tags=["Public - Comanda"])
+app.include_router(
+    cardapio_router, prefix="/api/v1/{slug}/cardapio", tags=["Public - Cardápio"]
+)
+app.include_router(
+    public_pedido_router, prefix="/api/v1/{slug}/pedido", tags=["Public - Pedido"]
+)
+app.include_router(
+    public_mesa_router, prefix="/api/v1/{slug}/mesa", tags=["Public - Mesa"]
+)
+app.include_router(
+    public_comanda_router, prefix="/api/v1/{slug}/comanda", tags=["Public - Comanda"]
+)
