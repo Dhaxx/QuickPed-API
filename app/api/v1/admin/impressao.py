@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from app.services.impressao import impressao_service
+from app.services.pedido import pedido_service
 from app.auth.dependencies import get_current_estabelecimento
 from app.database.engine import get_session
 
@@ -12,9 +13,29 @@ def test_impressao():
 
 
 @router.post("/pedido/{pedido_id}", status_code=status.HTTP_200_OK)
-def imprimir_pedido(
+def solicitar_impressao(
+    pedido_id: int,
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+    session=Depends(get_session),
+):
+    pedido_service.marcar_impresso(session, pedido_id, estabelecimento_id, False)
+    return {"message": "Pedido adicionado na fila de impressão", "pedido_id": pedido_id}
+
+
+@router.get("/pedido/{pedido_id}", status_code=status.HTTP_200_OK)
+def get_texto_impressao(
     pedido_id: int,
     estabelecimento_id: int = Depends(get_current_estabelecimento),
     session=Depends(get_session),
 ):
     return impressao_service.imprimir_pedido(session, pedido_id, estabelecimento_id)
+
+
+@router.post("/marcar-impresso/{pedido_id}", status_code=status.HTTP_200_OK)
+def marcar_impresso(
+    pedido_id: int,
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+    session=Depends(get_session),
+):
+    pedido_service.marcar_impresso(session, pedido_id, estabelecimento_id, True)
+    return {"message": "Pedido marcado como impresso"}

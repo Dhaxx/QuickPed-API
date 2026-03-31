@@ -201,5 +201,31 @@ class PedidoService(BaseService[Pedido]):
             )
         ).all()
 
+    def get_para_imprimir(self, session: Session, estabelecimento_id: int):
+        return session.exec(
+            select(Pedido).where(
+                Pedido.estabelecimento_id == estabelecimento_id,
+                Pedido.impresso == False,
+            )
+        ).all()
+
+    def marcar_impresso(
+        self,
+        session: Session,
+        pedido_id: int,
+        estabelecimento_id: int,
+        impresso: bool = True,
+    ):
+        pedido = session.exec(
+            select(Pedido).where(
+                Pedido.id == pedido_id,
+                Pedido.estabelecimento_id == estabelecimento_id,
+            )
+        ).first()
+        if pedido:
+            pedido.impresso = impresso
+            session.add(pedido)
+            session.commit()
+
 
 pedido_service = PedidoService(Pedido)

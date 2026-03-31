@@ -23,10 +23,6 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-print(f"DEBUG - API_URL: {os.getenv('API_URL')}")
-print(f"DEBUG - USUARIO: {os.getenv('USUARIO')}")
-print(f"DEBUG - SENHA: {os.getenv('SENHA')}")
-
 
 class ImpressoraClient:
     def __init__(self):
@@ -85,35 +81,41 @@ class ImpressoraClient:
         try:
             headers = {"Authorization": f"Bearer {self.token}"}
             url = f"{self.api_url}/api/v1/admin/pedido/pendentes"
-            logger.info(f"Buscando pedidos pendentes em: {url}")
             response = requests.get(url, headers=headers)
-            logger.info(f"Response status: {response.status_code}")
             if response.status_code == 401:
-                logger.warning("Token expirado, fazendo login novamente...")
                 if self.login():
                     return self.buscar_pedidos_pendentes()
                 return []
 
             if response.status_code == 200:
                 pedidos = response.json()
-                logger.info(f"Encontrados {len(pedidos)} pedidos pendentes")
                 return pedidos
-            else:
-                logger.error(
-                    f"Erro ao buscar pedidos: {response.status_code} - {response.text}"
-                )
             return []
         except Exception as e:
-            logger.error(f"Erro ao buscar pedidos: {e}")
+            print(f"❌ Erro ao buscar pedidos pendentes: {e}")
             return []
 
+    def buscar_fila_impressao(self):
+        """Busca pedidos com impresso=False"""
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            url = f"{self.api_url}/api/v1/admin/pedido/para-imprimir"
+            response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                pedidos = response.json()
-                return pedidos
+                return response.json()
             return []
         except Exception as e:
-            logger.error(f"Erro ao buscar pedidos: {e}")
+            print(f"❌ Erro ao buscar fila de impressão: {e}")
             return []
+
+    def marcar_impresso(self, pedido_id: int):
+        """Marca pedido como impresso na API"""
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            url = f"{self.api_url}/api/v1/admin/Impressao/marcar-impresso/{pedido_id}"
+            requests.post(url, headers=headers)
+        except Exception as e:
+            print(f"❌ Erro ao marcar impresso: {e}")
 
     def testar_conexao(self):
         """Testa se a API está acessível"""
@@ -143,7 +145,7 @@ class ImpressoraClient:
 
             url = f"{self.api_url}/api/v1/admin/Impressao/pedido/{pedido_id}"
             logger.info(f"Chamando: {url}")
-            response = requests.post(url, headers=headers)
+            response = requests.get(url, headers=headers)
             logger.info(f"Response status: {response.status_code}")
             if response.status_code == 200:
                 return response.json()
@@ -162,47 +164,47 @@ class ImpressoraClient:
             try:
                 self.impressora.text(texto + "\n")
                 self.impressora.cut()
-                logger.info(f"Pedido #{pedido_id} impresso com sucesso!")
+                print(f"✅ Pedido #{pedido_id} impresso com sucesso!")
             except Exception as e:
-                logger.error(f"Erro ao imprimir: {e}")
+                print(f"❌ Erro ao imprimir: {e}")
         else:
-            logger.info(f"[SIMULAÇÃO] Conteúdo a imprimir:\n{texto}")
+            print(f"\n📄 [SIMULAÇÃO] Conteúdo a imprimir:\n{texto}")
 
     def run(self):
         """Loop principal do client"""
-        logger.info("Iniciando Client de Impressão...")
-        logger.info(f"API: {self.api_url}")
-        logger.info(f"Intervalo de polling: {self.intervalo} segundos")
+        print("🔄 Iniciando Client de Impressão...")
+        print(f"📡 API: {self.api_url}")
+        print(f"⏱️  Intervalo de polling: {self.intervalo} segundos\n")
 
         if not self.login():
-            logger.error("Não foi possível fazer login. Encerrando.")
+            print("❌ Não foi possível fazer login. Encerrando.")
             return
 
-        logger.info("Cliente pronto! Aguardando novos pedidos...")
+        print("✅ Cliente pronto! Aguardando novos pedidos...\n")
 
         while True:
             try:
-                pedidos = self.buscar_pedidos_pendentes()
+                # Busca pedidos com impresso=False
+                fila = self.buscar_fila_impressao()
 
-                for pedido in pedidos:
+                for pedido in fila:
                     pedido_id = pedido.get("id")
 
-                    if pedido_id not in self.pedidos_impressos:
-                        logger.info(f"Novo pedido detectado: #{pedido_id}")
+                    print(f"🆕 Pedido para imprimir: #{pedido_id}")
 
-                        resultado = self.chamar_endpoint_impressao(pedido_id)
+                    resultado = self.chamar_endpoint_impressao(pedido_id)
 
-                        if resultado and resultado.get("texto"):
-                            self.imprimir_texto(resultado["texto"], pedido_id)
-                            self.pedidos_impressos.add(pedido_id)
+                    if resultado and resultado.get("texto"):
+                        self.imprimir_texto(resultado["texto"], pedido_id)
+                        self.marcar_impresso(pedido_id)
 
                 time.sleep(self.intervalo)
 
             except KeyboardInterrupt:
-                logger.info("Encerrando cliente...")
+                print("\n👋 Encerrando cliente...")
                 break
             except Exception as e:
-                logger.error(f"Erro no loop principal: {e}")
+                print(f"❌ Erro no loop principal: {e}")
                 time.sleep(self.intervalo)
 
 

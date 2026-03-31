@@ -27,6 +27,16 @@ def get_pedidos_pendentes(
     return pedido_service.get_pendentes(session, estabelecimento_id)
 
 
+@router.get(
+    "/para-imprimir", response_model=list[PedidoRead], status_code=status.HTTP_200_OK
+)
+def get_pedidos_para_imprimir(
+    session=Depends(get_session),
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+):
+    return pedido_service.get_para_imprimir(session, estabelecimento_id)
+
+
 @router.put("/", response_model=PedidoRead, status_code=status.HTTP_200_OK)
 def update_Pedido(
     Pedido_id: int,
