@@ -9,6 +9,15 @@ from sqlalchemy.orm import selectinload
 
 
 class ComandaService(BaseService[Comanda]):
+    def get_all(self, session: Session, estabelecimento_id: int):
+        return list(
+            session.exec(
+                select(Comanda).where(
+                    Comanda.estabelecimento_id == estabelecimento_id,
+                )
+            ).all()
+        )
+
     def recalcular_total(
         self, session: Session, numero_mesa: int, estabelecimento_id: int
     ):

@@ -16,6 +16,12 @@ class PedidoService(BaseService[Pedido]):
     def create(
         self, session: Session, estabelecimento_id: int, data: PedidoCreate
     ) -> Pedido:
+        if not data.nome_cliente or len(data.nome_cliente.strip()) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Nome do cliente é obrigatório",
+            )
+
         itens_processados = []
         total_pedido = Decimal("0.00")
 
@@ -54,23 +60,42 @@ class PedidoService(BaseService[Pedido]):
             session.add(comanda)
             session.flush()
 
-        for item in data.itens:
+        for item_data in data.itens:
+            item = item_data if isinstance(item_data, dict) else item_data.model_dump()
+
             produto = session.exec(
                 select(Produto).where(
-                    Produto.id == item.produto_id,
+                    Produto.id == item.get("produto_id"),
                     Produto.estabelecimento_id == estabelecimento_id,
                 )
             ).first()
 
             if not produto:
-                raise ValueError(f"Produto {item.produto_id} não encontrado")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Produto {item.get('produto_id')} não encontrado",
+                )
 
             preco_unitario = produto.preco
-            subtotal_item = preco_unitario * item.quantidade
+            quantidade = item.get("quantidade", 1)
 
-            if item.adicionais:
-                for adicional in item.adicionais:
-                    subtotal_item += adicional.preco * item.quantidade
+            if quantidade < 1:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Quantidade deve ser pelo menos 1",
+                )
+
+            subtotal_item = preco_unitario * quantidade
+
+            adicionais = item.get("adicionais", [])
+            if adicionais:
+                for adicional in adicionais:
+                    preco_adicional = (
+                        adicional.get("preco", 0)
+                        if isinstance(adicional, dict)
+                        else adicional.preco
+                    )
+                    subtotal_item += preco_adicional * quantidade
 
             if produto.produzido_por is not None:
                 produtor = session.exec(
@@ -83,8 +108,8 @@ class PedidoService(BaseService[Pedido]):
                 produto_id=produto.id,
                 nome_produto=produto.nome,
                 preco_unitario=preco_unitario,
-                quantidade=item.quantidade,
-                adicionais=item.adicionais,
+                quantidade=quantidade,
+                adicionais=adicionais,
                 produzido_por=produtor,
             )
 
@@ -192,6 +217,25 @@ class PedidoService(BaseService[Pedido]):
                 Pedido.estabelecimento_id == estabelecimento_id,
             )
         ).all()
+
+    def get_all(self, session: Session, estabelecimento_id: int):
+        stmt = select(Pedido).where(
+            Pedido.estabelecimento_id == estabelecimento_id,
+        )
+        result = session.exec(stmt).all()
+        return [
+            dict(
+                id=p.id,
+                nome_cliente=p.nome_cliente,
+                numero_mesa=p.numero_mesa,
+                obs=p.obs,
+                status=p.status.value if hasattr(p.status, "value") else str(p.status),
+                total=str(p.total),
+                criado_em=p.criado_em.isoformat() if p.criado_em else None,
+                itens=p.itens,
+            )
+            for p in result
+        ]
 
     def get_pendentes(self, session: Session, estabelecimento_id: int):
         return session.exec(

@@ -5,7 +5,6 @@ from ..models.categoria_produto import CategoriaProduto
 from ..models.produto import Produto, GrupoAdicional, Adicional
 from ..models.pedido import Pedido
 from ..models.comanda import Comanda
-from ..models.reimpressao import Reimpressao
 
 if settings.sgbd_driver == "sqlite":
     engine = create_engine(settings.db_url, echo=True)

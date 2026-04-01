@@ -48,12 +48,12 @@ class PedidoItem(SQLModel):
         )
     )
     quantidade: int
-    adicionais: List[PedidoItemAdicional] = Field(default_factory=list)
+    adicionais: List["PedidoItemAdicional"] = Field(default_factory=list)
     produzido_por: Optional[str] = None
 
 
 class PedidoBase(SQLModel):
-    nome_cliente: str
+    nome_cliente: str = Field(min_length=1)
     numero_mesa: int = Field(index=True)
     obs: Optional[str] = None
 

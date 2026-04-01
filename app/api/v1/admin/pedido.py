@@ -8,13 +8,13 @@ from app.models.pedido import StatusPedido
 router = APIRouter()
 
 
-# Rotas dos Pedidos
-@router.get("/", response_model=list[PedidoRead], status_code=status.HTTP_200_OK)
+@router.get("/")
 def get_Pedidos(
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
 ):
-    return pedido_service.get(session, estabelecimento_id)
+    result = pedido_service.get_all(session, estabelecimento_id)
+    return result
 
 
 @router.get(
@@ -24,7 +24,7 @@ def get_pedidos_pendentes(
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
 ):
-    return pedido_service.get_pendentes(session, estabelecimento_id)
+    return list(pedido_service.get_pendentes(session, estabelecimento_id))
 
 
 @router.get(
@@ -34,7 +34,7 @@ def get_pedidos_para_imprimir(
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
 ):
-    return pedido_service.get_para_imprimir(session, estabelecimento_id)
+    return list(pedido_service.get_para_imprimir(session, estabelecimento_id))
 
 
 @router.put("/", response_model=PedidoRead, status_code=status.HTTP_200_OK)
@@ -49,7 +49,7 @@ def update_Pedido(
 
 
 @router.delete("/", response_model=PedidoRead, status_code=status.HTTP_200_OK)
-def update_Pedido(
+def delete_Pedido(
     Pedido_id: int,
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
