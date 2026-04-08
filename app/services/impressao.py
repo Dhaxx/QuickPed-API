@@ -5,42 +5,47 @@ from datetime import datetime
 
 
 class ImpressaoService:
+    def __init__(self):
+        # Padrao para 58mm e aprox. 30-32 caracteres
+        self.largura_papel = 32 
+
     def formatar_pedido(self, pedido: dict) -> str:
         destino_producao = {}
 
         for item in pedido.get("itens", []):
             destino = item.get("produzido_por") or "GERAL"
-
-            destino_producao.setdefault(destino, []).append(
-                {
-                    "produto": item.get("nome_produto"),
-                    "quantidade": item.get("quantidade"),
-                    "adicionais": [
-                        adicional.get("nome")
-                        if isinstance(adicional, dict)
-                        else adicional.nome
-                        for adicional in item.get("adicionais", [])
-                    ],
-                }
-            )
+            destino_producao.setdefault(destino, []).append({
+                "produto": item.get("nome_produto"),
+                "quantidade": item.get("quantidade"),
+                "adicionais": [
+                    adicional.get("nome") if isinstance(adicional, dict) else adicional.nome
+                    for adicional in item.get("adicionais", [])
+                ],
+            })
 
         linhas = []
-
         for categoria, itens in destino_producao.items():
-            linhas.append(f"{'=' * 20}[Pedido #{pedido.get('id')}]{'=' * 20}")
+            # Centralizando [Pedido #ID] com preenchimento de '='
+            titulo_pedido = f"[Pedido #{pedido.get('id')}]"
+            linhas.append(titulo_pedido.center(self.largura_papel, "="))
+            
             linhas.append(f"Preparador: {categoria.upper()}")
-            linhas.append(f"N° Mesa: {pedido.get('numero_mesa')}")
+            linhas.append(f"Mesa: {pedido.get('numero_mesa')}")
             linhas.append(f"Cliente: {pedido.get('nome_cliente')}")
-            linhas.append(f"{'=' * 23}[Itens]{'=' * 22}")
+            
+            # Centralizando [Itens] com preenchimento de '='
+            titulo_itens = "[Itens]"
+            linhas.append(titulo_itens.center(self.largura_papel, "="))
 
             for item in itens:
-                linhas.append(f"- {item['quantidade']}x {item['produto']}")
-
+                linhas.append(f"{item['quantidade']}x {item['produto']}")
                 if item["adicionais"]:
                     for adicional in item["adicionais"]:
-                        linhas.append(f"   + {adicional}")
+                        linhas.append(f"  + {adicional}")
 
-            linhas.append(f"{'=' * 52}\n\n")
+            # Linha final de fechamento
+            linhas.append("=" * self.largura_papel)
+            linhas.append("\n") # Espaço entre categorias
 
         return "\n".join(linhas)
 

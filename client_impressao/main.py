@@ -7,12 +7,16 @@ import requests
 from dotenv import load_dotenv
 
 try:
-    from escpos.printer import Usb
+    import serial
+    from escpos.printer import Usb as UsbPrinter, Win32Raw as Win32RawPrinter
 
     ESCPOS_DISPONIVEL = True
 except ImportError:
+    serial = None
+    UsbPrinter = None
+    Win32RawPrinter = None
     ESCPOS_DISPONIVEL = False
-    print("AVISO: Biblioteca escpos não instalada. Modo simulação ativado.")
+    print("AVISO: Biblioteca escpos/pyserial não instalada. Modo simulação ativado.")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,15 +42,44 @@ class ImpressoraClient:
         self.configurar_impressora()
 
     def configurar_impressora(self):
-        """Configura a impressora USB"""
+        """Configura a impressora USB, Serial (Bluetooth/COM) ou Win32Raw"""
         vendor_id = os.getenv("USB_VENDOR_ID")
         product_id = os.getenv("USB_PRODUCT_ID")
+        serial_port = os.getenv("SERIAL_PORT")
+        printer_name = os.getenv("PRINTER_NAME")
 
-        if vendor_id and product_id and ESCPOS_DISPONIVEL:
+        logger.info(
+            f"Configuração - PRINTER_NAME: {printer_name}, USB: {vendor_id}:{product_id}, SERIAL: {serial_port}"
+        )
+
+        if printer_name and ESCPOS_DISPONIVEL and Win32RawPrinter:
+            try:
+                self.impressora = Win32RawPrinter(printer_name)
+                logger.info(f"Impressora Win32Raw conectada ({printer_name})")
+            except Exception as e:
+                logger.error(f"Erro ao conectar impressora Win32Raw: {e}")
+                logger.info("Executando em modo SIMULAÇÃO (apenas logs)")
+                self.impressora = None
+        elif serial_port and ESCPOS_DISPONIVEL:
+            try:
+                from escpos.printer import Serial as SerialPrinter
+
+                baudrate = int(os.getenv("SERIAL_BAUDRATE", "9600"))
+                self.impressora = SerialPrinter(
+                    devfile=serial_port, baudrate=baudrate, timeout=5
+                )
+                logger.info(
+                    f"Impressora Serial conectada ({serial_port}, {baudrate} baud)"
+                )
+            except Exception as e:
+                logger.error(f"Erro ao conectar impressora Serial: {e}")
+                logger.info("Executando em modo SIMULAÇÃO (apenas logs)")
+                self.impressora = None
+        elif vendor_id and product_id and ESCPOS_DISPONIVEL and UsbPrinter:
             try:
                 vendor_id = int(vendor_id, 16)
                 product_id = int(product_id, 16)
-                self.impressora = Usb(vendor_id, product_id, timeout=5)
+                self.impressora = UsbPrinter(vendor_id, product_id, timeout=5)
                 logger.info(
                     f"Impressora USB conectada (VID: {vendor_id:04x}, PID: {product_id:04x})"
                 )
@@ -55,7 +88,7 @@ class ImpressoraClient:
                 logger.info("Executando em modo SIMULAÇÃO (apenas logs)")
                 self.impressora = None
         else:
-            logger.info("Modo SIMULAÇÃO (sem impressora USB)")
+            logger.info("Modo SIMULAÇÃO (sem impressora)")
             self.impressora = None
 
     def login(self):
@@ -159,11 +192,26 @@ class ImpressoraClient:
             return None
 
     def imprimir_texto(self, texto: str, pedido_id: int):
-        """Envia texto para a impressora USB"""
-        if self.impressora:
+        """Envia texto para a impressora"""
+        texto = texto.rstrip()
+        printer_name = os.getenv("PRINTER_NAME")
+        if printer_name and ESCPOS_DISPONIVEL and Win32RawPrinter:
             try:
-                self.impressora.text(texto + "\n")
-                self.impressora.cut()
+                impressora = Win32RawPrinter(printer_name)
+                impressora._raw(b"\x1b\x33\x16")
+                impressora.text(texto)
+                impressora.text("\n\n")
+                impressora.text("-" * 32)
+                impressora.text("\n\n")
+                impressora.close()
+                print(f"✅ Pedido #{pedido_id} impresso com sucesso!")
+            except Exception as e:
+                print(f"❌ Erro ao imprimir: {e}")
+        elif self.impressora:
+            try:
+                self.impressora.text(texto)
+                self.impressora._raw(b"\x1d\x56\x42\x00")
+                self.impressora.close()
                 print(f"✅ Pedido #{pedido_id} impresso com sucesso!")
             except Exception as e:
                 print(f"❌ Erro ao imprimir: {e}")
