@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from typing import Optional
 
 from app.models.comanda import Comanda
 from app.models.pedido import Pedido
@@ -9,14 +10,23 @@ from sqlalchemy.orm import selectinload
 
 
 class ComandaService(BaseService[Comanda]):
-    def get_all(self, session: Session, estabelecimento_id: int):
-        return list(
-            session.exec(
-                select(Comanda).where(
-                    Comanda.estabelecimento_id == estabelecimento_id,
-                )
-            ).all()
+    def get_all(
+        self, session: Session, estabelecimento_id: int, status: Optional[str] = None
+    ):
+        query = select(Comanda).where(
+            Comanda.estabelecimento_id == estabelecimento_id,
         )
+        if status:
+            query = query.where(Comanda.status == status)
+
+        comandas = list(
+            session.exec(query.options(selectinload(Comanda.pedidos))).all()
+        )
+
+        for comanda in comandas:
+            if comanda.status == "aberta":
+                self.recalcular_total(session, comanda.numero_mesa, estabelecimento_id)
+        return comandas
 
     def recalcular_total(
         self, session: Session, numero_mesa: int, estabelecimento_id: int
