@@ -7,6 +7,7 @@ load_dotenv()
 class Settings(BaseSettings):
     app_name: str = "API"
     debug: bool = False
+    db_host: str = "localhost"
     db_user: str = "postgres"
     db_password: str = "development"
     db_name: str = "test.db"
@@ -18,7 +19,7 @@ class Settings(BaseSettings):
         if self.sgbd_driver == "sqlite":
             return f"sqlite:///{self.db_name}"
         else:
-            return f"{self.sgbd_driver}://{self.db_user}:{self.db_password}@localhost/{self.db_name}"
+            return f"{self.sgbd_driver}://{self.db_user}:{self.db_password}@{self.db_host}/{self.db_name}"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
