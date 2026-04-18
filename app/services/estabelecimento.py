@@ -26,7 +26,8 @@ class EstabelecimentoService(BaseService[Estabelecimento]):
         usuario_admin = Usuario(
             usuario=estabelecimento.cnpj,
             senha_hash=gerar_hash(estabelecimento.cnpj),
-            estabelecimento_id=estabelecimento.id
+            estabelecimento_id=estabelecimento.id,
+            admin=True
         )
         session.add(usuario_admin)
 
