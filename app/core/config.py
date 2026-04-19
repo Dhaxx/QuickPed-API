@@ -1,7 +1,4 @@
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -19,14 +16,9 @@ class Settings(BaseSettings):
         if self.sgbd_driver == "sqlite":
             return f"sqlite:///{self.db_name}"
         else:
-            return f"{self.sgbd_driver}://{self.db_user}:{self.db_password}@{self.db_host}/{self.db_name}"
+            return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}/{self.db_name}"
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if not self.secret_key:
-            raise ValueError("SECRET_KEY environment variable is required")
-
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
 settings = Settings()
