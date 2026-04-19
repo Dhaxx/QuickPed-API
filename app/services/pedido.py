@@ -77,7 +77,7 @@ class PedidoService(BaseService[Pedido]):
                 )
 
             preco_unitario = produto.preco
-            quantidade = item.get("quantidade", 1)
+            quantidade = Decimal(str(item.get("quantidade", 1)))
 
             if quantidade < 1:
                 raise HTTPException(
@@ -90,11 +90,11 @@ class PedidoService(BaseService[Pedido]):
             adicionais = item.get("adicionais", [])
             if adicionais:
                 for adicional in adicionais:
-                    preco_adicional = (
+                    preco_adicional = Decimal((
                         adicional.get("preco", 0)
                         if isinstance(adicional, dict)
                         else adicional.preco
-                    )
+                    ))
                     subtotal_item += preco_adicional * quantidade
 
             if produto.produzido_por is not None:
