@@ -76,7 +76,7 @@ class PedidoService(BaseService[Pedido]):
                     detail=f"Produto {item.get('produto_id')} não encontrado",
                 )
 
-            preco_unitario = produto.preco
+            preco_unitario = Decimal(produto.preco)
             quantidade = Decimal(str(item.get("quantidade", 1)))
 
             if quantidade < 1:
