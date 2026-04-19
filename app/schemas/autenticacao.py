@@ -31,3 +31,4 @@ class UsuarioRead(UsuarioBase):
     estabelecimento_id: int
     ativo: bool
     admin: bool
+    master: bool

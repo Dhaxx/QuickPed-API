@@ -12,4 +12,5 @@ dependencies = [
     "sqlmodel>=0.0.37",
     "unidecode>=1.4.0",
     "slowapi>=0.1.9",
+    "alembic>=1.15.0",
 ]
