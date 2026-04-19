@@ -90,11 +90,11 @@ class PedidoService(BaseService[Pedido]):
             adicionais = item.get("adicionais", [])
             if adicionais:
                 for adicional in adicionais:
-                    preco_adicional = Decimal((
-                        adicional.get("preco", 0)
+                    preco_adicional = (
+                        Decimal(adicional.get("preco", 0))
                         if isinstance(adicional, dict)
-                        else adicional.preco
-                    ))
+                        else Decimal(adicional.preco)
+                    )
                     subtotal_item += preco_adicional * quantidade
 
             if produto.produzido_por is not None:
