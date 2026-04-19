@@ -63,7 +63,7 @@ def create_master_user():
         user = Usuario(
             usuario=settings.db_user,
             senha_hash=gerar_hash(settings.db_password),
-            estabelecimento_id=estabelecimento.id,  # type: ignore[arg-type]
+            estabelecimento_id=estabelecimento.id,
             admin=True,
             master=True,
         )
