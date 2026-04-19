@@ -37,11 +37,6 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    import sys
-
-    print(f"DEBUG DB URL: {settings.db_url}", file=sys.stderr)
-    from sqlalchemy import create_engine
-
     connectable = create_engine(settings.db_url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
