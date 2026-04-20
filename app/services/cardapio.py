@@ -1,5 +1,11 @@
 from sqlmodel import Session, text
-from app.schemas.cardapio import CardapioPublicResponse, CategoriaPublic, ProdutoPublic, AdicionalPublic
+from app.schemas.cardapio import (
+    CardapioPublicResponse,
+    CategoriaPublic,
+    ProdutoPublic,
+    AdicionalPublic,
+)
+from app.models.estabelecimento import Estabelecimento
 
 SQL_CARDAPIO_JSON = """
 select
@@ -29,12 +35,14 @@ group by cp.id, cp.nome, cp.ordem, p.id, p.nome, p.descricao, p.preco
 order by cp.ordem, cp.nome, p.nome
 """
 
+
 class CardapioService:
     @staticmethod
-    def obter_cardapio(session: Session, estabelecimento_id: int) -> CardapioPublicResponse:
+    def obter_cardapio(
+        session: Session, estabelecimento_id: int
+    ) -> CardapioPublicResponse:
         rows = session.exec(
-            text(SQL_CARDAPIO_JSON), 
-            params={"estabelecimento_id": estabelecimento_id}
+            text(SQL_CARDAPIO_JSON), params={"estabelecimento_id": estabelecimento_id}
         ).all()
 
         categorias_dict = {}
@@ -47,7 +55,7 @@ class CardapioService:
                     "id": cat_id,
                     "nome": r.nome_categoria,
                     "ordem": r.ordem_categoria,
-                    "produtos": []
+                    "produtos": [],
                 }
 
             # Produto
@@ -58,7 +66,7 @@ class CardapioService:
                 preco=r.preco_produto,
                 imagem_url=r.imagem_url,
                 disponivel=True,
-                adicionais=[AdicionalPublic(**a) for a in r.adicionais]
+                adicionais=[AdicionalPublic(**a) for a in r.adicionais],
             )
 
             categorias_dict[cat_id]["produtos"].append(produto)
@@ -67,8 +75,12 @@ class CardapioService:
         categorias_list = [CategoriaPublic(**cat) for cat in categorias_dict.values()]
 
         estabelecimento = session.exec(
-            text("select nome, esta_aberto aberto, slug, logo_url from estabelecimento where id = :id"), 
-            params={"id": estabelecimento_id}
+            text(
+                "select nome, esta_aberto aberto, slug, logo_url from estabelecimento where id = :id"
+            ),
+            params={"id": estabelecimento_id},
         ).first()
 
-        return CardapioPublicResponse(estabelecimento=estabelecimento, categorias=categorias_list)
+        return CardapioPublicResponse(
+            estabelecimento=estabelecimento, categorias=categorias_list
+        )
