@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from jose import jwt
 from ..core.config import settings
 
@@ -19,7 +19,7 @@ def criar_token(data: dict):
     O token gerado inclui uma data de expiração ('exp') definida para alguns minutos à frente, conforme especificado pela constante EXPIRATION_MINUTES. O token é assinado usando a chave secreta (SECRET_KEY) e o algoritmo especificado (ALGORITHM).
     """
     payload = data.copy()
-    expire = datetime.now() + timedelta(minutes=EXPIRATION_MINUTES)
+    expire = settings.time_now + timedelta(minutes=EXPIRATION_MINUTES)
     payload.update({"exp": expire})
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token

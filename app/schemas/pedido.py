@@ -1,8 +1,8 @@
 from sqlmodel import SQLModel, Field
-from typing import Optional, List
+from typing import Optional
 from decimal import Decimal
-from datetime import datetime, timezone
-
+from datetime import datetime
+from app.core.config import settings
 
 class PedidoCreate(SQLModel):
     nome_cliente: str
@@ -19,7 +19,7 @@ class PedidoRead(SQLModel):
     obs: Optional[str] = None
     status: str
     total: Decimal
-    criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    criado_em: datetime = Field(default_factory=lambda: settings.time_now)
     itens: list = Field(default_factory=list)
 
 

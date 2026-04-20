@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Field, Relationship
-from datetime import datetime, timezone
+from datetime import datetime
+from app.core.config import settings
 
 class UsuarioBase(SQLModel):
     usuario: str
@@ -9,7 +10,7 @@ class Usuario(UsuarioBase, table=True):
     id: int = Field(default=None, primary_key=True)
     senha_hash: str
     ativo: bool = Field(default=True)
-    criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    criado_em: datetime = Field(default_factory=lambda: settings.time_now)
     admin: bool = Field(default=False)
     master: bool = Field(default=False)
 

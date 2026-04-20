@@ -1,4 +1,4 @@
-from ..models.mesa import MesaBase, Optional, SQLModel, Field, datetime, uuid
+from ..models.mesa import MesaBase, Optional, SQLModel, datetime
 
 class MesaCreate(MesaBase):
     pass

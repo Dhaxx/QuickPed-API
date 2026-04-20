@@ -10,10 +10,10 @@ from sqlmodel import (
 from typing import Optional, List
 from decimal import Decimal
 from enum import Enum
-from datetime import datetime, timezone
+from datetime import datetime
 from .estabelecimento import Estabelecimento
 from .comanda import Comanda
-
+from app.core.config import settings
 
 class StatusPedido(str, Enum):
     PENDENTE = "Pendente"
@@ -65,7 +65,7 @@ class Pedido(PedidoBase, table=True):
     estabelecimento_id: int = Field(foreign_key="estabelecimento.id", index=True)
     comanda_id: int = Field(foreign_key="comanda.id", index=True)
     status: StatusPedido = Field(default=StatusPedido.PENDENTE, index=True)
-    criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    criado_em: datetime = Field(default_factory=lambda: settings.time_now)
     total: Decimal = Field(
         sa_column=Column(
             Numeric(10, 2),

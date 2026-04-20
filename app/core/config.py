@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+from zoneinfo import ZoneInfo
+from datetime import datetime
 
 class Settings(BaseSettings):
     app_name: str = "API"
@@ -10,6 +11,7 @@ class Settings(BaseSettings):
     db_name: str = "test.db"
     sgbd_driver: str = "sqlite"
     secret_key: str = ""
+    time_now: datetime = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
     @property
     def db_url(self) -> str:

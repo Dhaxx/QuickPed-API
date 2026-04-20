@@ -1,8 +1,6 @@
 from sqlmodel import Session, select
 from app.models.pedido import Pedido
 from fastapi import HTTPException
-from datetime import datetime
-
 
 class ImpressaoService:
     def __init__(self):

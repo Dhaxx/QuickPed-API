@@ -2,6 +2,7 @@ from sqlmodel import SQLModel, Field, UniqueConstraint, Relationship
 from typing import Optional
 import uuid
 from datetime import datetime
+from app.core.config import settings
 
 class MesaBase(SQLModel):
     numero: int = Field(index=True, nullable=False)
@@ -19,6 +20,6 @@ class Mesa(MesaBase, table=True):
 
     ativa: bool = Field(default=True)
 
-    criado_em: Optional[datetime] = None
+    criado_em: Optional[datetime] = Field(default_factory=lambda: settings.time_now)
 
     estabelecimento: "Estabelecimento" = Relationship(back_populates="mesas")
