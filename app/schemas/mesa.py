@@ -11,4 +11,5 @@ class MesaRead(MesaBase):
 
 class MesaUpdate(SQLModel):
     numero: Optional[int] = None
+    nome: Optional[str] = None
     ativa: Optional[bool] = None

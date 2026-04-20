@@ -7,6 +7,7 @@ from app.core.config import settings
 
 class MesaBase(SQLModel):
     numero: int = Field(index=True, nullable=False)
+    nome: Optional[str] = Field(default=None)
 
 
 class Mesa(MesaBase, table=True):
