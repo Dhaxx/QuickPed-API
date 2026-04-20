@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from typing import Optional
 
 from app.models.comanda import Comanda
-from app.models.pedido import Pedido
+from app.models.pedido import Pedido, StatusPedido
 from app.models.mesa import Mesa
 from app.services.base import BaseService
 from sqlmodel import Session, select
@@ -79,9 +79,12 @@ class ComandaService(BaseService[Comanda]):
         return comanda
 
     def fechar_comanda(
-        self, session: Session, comanda_id: int, estabelecimento_id: int
+        self,
+        session: Session,
+        comanda_id: int,
+        estabelecimento_id: int,
+        forcar: bool = False,
     ):
-        # Lock na comanda para evitar fechamento simultâneo por duas requisições
         comanda = session.exec(
             select(Comanda)
             .where(
@@ -94,7 +97,6 @@ class ComandaService(BaseService[Comanda]):
         if not comanda:
             raise HTTPException(status_code=404, detail="Comanda não encontrada")
 
-        # Lock nos pedidos para evitar condições de corrida ao verificar status
         pedidos_em_aberto = session.exec(
             select(Pedido)
             .where(
@@ -105,10 +107,15 @@ class ComandaService(BaseService[Comanda]):
         ).all()
 
         if pedidos_em_aberto:
-            raise HTTPException(
-                status_code=409,
-                detail="Não é possível fechar a comanda. Existem pedidos em aberto.",
-            )
+            if forcar:
+                for pedido in pedidos_em_aberto:
+                    pedido.status = StatusPedido.ENTREGUE
+                    session.add(pedido)
+            else:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Não é possível fechar a comanda. Existem pedidos em aberto.",
+                )
 
         comanda.status = "fechada"
         session.add(comanda)

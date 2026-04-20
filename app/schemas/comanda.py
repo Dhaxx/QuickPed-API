@@ -15,3 +15,4 @@ class ComandaRead(ComandaBase):
 
 class ComandaUpdate(SQLModel):
     status: StatusComanda
+    forcar: bool = False
