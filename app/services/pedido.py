@@ -1,5 +1,6 @@
 from app.models.pedido import Pedido, PedidoItem, PedidoItemAdicional, StatusPedido
 from app.models.produto import Adicional
+from app.models.estabelecimento import Estabelecimento
 from app.services.base import BaseService
 from ..schemas.pedido import PedidoCreate
 from sqlmodel import Session, select, update, func
@@ -20,6 +21,14 @@ class PedidoService(BaseService[Pedido]):
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 detail="Nome do cliente é obrigatório",
+            )
+        
+        estabelecimento = session.get(Estabelecimento, estabelecimento_id)
+
+        if not estabelecimento.esta_aberto:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Estabelecimento não está aberto",
             )
 
         itens_processados = []
