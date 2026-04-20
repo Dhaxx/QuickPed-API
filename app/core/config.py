@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from zoneinfo import ZoneInfo
 from datetime import datetime
 
+
 class Settings(BaseSettings):
     app_name: str = "API"
     debug: bool = False
@@ -11,7 +12,6 @@ class Settings(BaseSettings):
     db_name: str = "test.db"
     sgbd_driver: str = "sqlite"
     secret_key: str = ""
-    time_now: datetime = datetime.now(ZoneInfo("America/Sao_Paulo"))
 
     @property
     def db_url(self) -> str:
@@ -21,6 +21,17 @@ class Settings(BaseSettings):
             return f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}/{self.db_name}"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    def time_now(self) -> datetime:
+        return (
+            datetime.now(ZoneInfo("UTC"))
+            .astimezone(ZoneInfo("America/Sao_Paulo"))
+            .replace(tzinfo=None)
+        )
+
+    @property
+    def time_now_prop(self) -> datetime:
+        return self.time_now()
 
 
 settings = Settings()

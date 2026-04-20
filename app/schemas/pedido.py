@@ -4,6 +4,7 @@ from decimal import Decimal
 from datetime import datetime
 from app.core.config import settings
 
+
 class PedidoCreate(SQLModel):
     nome_cliente: str
     numero_mesa: int
@@ -19,7 +20,7 @@ class PedidoRead(SQLModel):
     obs: Optional[str] = None
     status: str
     total: Decimal
-    criado_em: datetime = Field(default_factory=lambda: settings.time_now)
+    criado_em: datetime = Field(default_factory=settings.time_now)
     itens: list = Field(default_factory=list)
 
 

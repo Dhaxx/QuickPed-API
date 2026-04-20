@@ -15,6 +15,7 @@ from .estabelecimento import Estabelecimento
 from .comanda import Comanda
 from app.core.config import settings
 
+
 class StatusPedido(str, Enum):
     PENDENTE = "Pendente"
     PREPARACAO = "Em Preparação"
@@ -65,7 +66,7 @@ class Pedido(PedidoBase, table=True):
     estabelecimento_id: int = Field(foreign_key="estabelecimento.id", index=True)
     comanda_id: int = Field(foreign_key="comanda.id", index=True)
     status: StatusPedido = Field(default=StatusPedido.PENDENTE, index=True)
-    criado_em: datetime = Field(default_factory=lambda: settings.time_now)
+    criado_em: datetime = Field(default_factory=settings.time_now)
     total: Decimal = Field(
         sa_column=Column(
             Numeric(10, 2),

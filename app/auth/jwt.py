@@ -6,6 +6,7 @@ SECRET_KEY = settings.secret_key
 ALGORITHM = "HS256"
 EXPIRATION_MINUTES = 60 * 24  # 1 dia
 
+
 def criar_token(data: dict):
     """
     Gera um token JWT com os dados fornecidos.
@@ -19,7 +20,7 @@ def criar_token(data: dict):
     O token gerado inclui uma data de expiração ('exp') definida para alguns minutos à frente, conforme especificado pela constante EXPIRATION_MINUTES. O token é assinado usando a chave secreta (SECRET_KEY) e o algoritmo especificado (ALGORITHM).
     """
     payload = data.copy()
-    expire = settings.time_now + timedelta(minutes=EXPIRATION_MINUTES)
+    expire = settings.time_now() + timedelta(minutes=EXPIRATION_MINUTES)
     payload.update({"exp": expire})
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token

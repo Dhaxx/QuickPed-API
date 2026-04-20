@@ -13,4 +13,5 @@ dependencies = [
     "unidecode>=1.4.0",
     "slowapi>=0.1.9",
     "alembic>=1.15.0",
+    "tzdata>=2026.1",
 ]
