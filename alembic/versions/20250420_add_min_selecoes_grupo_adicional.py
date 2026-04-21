@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "add_min_selecoes_grupo"
-down_revision = "a54580fdb9dd"  # último revision
+down_revision = "098bb0b53b75"  # último revision
 branch_labels = None
 depends_on = None
 
