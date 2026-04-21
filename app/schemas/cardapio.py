@@ -11,6 +11,8 @@ class EstabelecimentoPublic(SQLModel):
     aberto: bool  # "aberto" | "fechado"
     slug: str
     logo_url: str | None
+    auto_atendimento: bool
+    delivery: bool
 
 
 class CategoriaPublic(SQLModel):

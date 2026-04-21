@@ -80,7 +80,7 @@ class CardapioService:
 
         estabelecimento = session.exec(
             text(
-                "select nome, esta_aberto aberto, slug, logo_url from estabelecimento where id = :id"
+                "select nome, esta_aberto aberto, slug, logo_url, p.* from estabelecimento e join parametros p on e.id = p.estabelecimento_id where e.id = :id"
             ),
             params={"id": estabelecimento_id},
         ).first()

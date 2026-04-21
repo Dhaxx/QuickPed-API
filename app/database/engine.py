@@ -6,6 +6,7 @@ from ..models.produto import Produto, GrupoAdicional, Adicional
 from ..models.pedido import Pedido
 from ..models.comanda import Comanda
 from ..models.usuario import Usuario
+from ..models.parametros import Parametros
 from ..auth.hash import gerar_hash
 
 if settings.sgbd_driver == "sqlite":
@@ -70,7 +71,14 @@ def create_master_user():
         session.add(user)
         session.commit()
 
-
 def get_session():
     with Session(engine) as session:
         yield session
+
+def create_parameters():
+    with Session(engine) as session:
+        for estabelecimento in session.exec(select(Estabelecimento)).all():
+            if not estabelecimento.parametros:
+                parametros = Parametros(estabelecimento_id=estabelecimento.id)
+                session.add(parametros)
+        session.commit()
