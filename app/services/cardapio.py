@@ -22,7 +22,11 @@ select
             json_build_object(
                 'id', a.id,
                 'nome', a.nome,
-                'preco', a.preco
+                'preco', a.preco,
+                'grupo_id', ga.id,
+                'grupo_nome', ga.nome,
+                'max_selecoes', ga.max_selecoes,
+                'min_selecoes', COALESCE(ga.min_selecoes, 0)
             )
         ) filter (where a.id is not null), '[]'
     ) as adicionais

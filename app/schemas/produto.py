@@ -1,5 +1,13 @@
-from ..models.produto import SQLModel, ProdutoBase, GrupoAdicionalBase, AdicionalBase, Optional, Decimal
+from ..models.produto import (
+    SQLModel,
+    ProdutoBase,
+    GrupoAdicionalBase,
+    AdicionalBase,
+    Optional,
+    Decimal,
+)
 from pydantic import field_validator
+
 
 class ProdutoCreate(ProdutoBase):
     @field_validator("preco")
@@ -8,9 +16,11 @@ class ProdutoCreate(ProdutoBase):
             raise ValueError("O preço não pode ser negativo")
         return v
 
+
 class ProdutoRead(ProdutoBase):
     id: int
     ativo: bool
+
 
 class ProdutoUpdate(SQLModel):
     nome: Optional[str] = None
@@ -20,7 +30,7 @@ class ProdutoUpdate(SQLModel):
     categoria_id: Optional[int] = None
     estabelecimento_id: Optional[int] = None
     ativo: Optional[bool] = None
-    produzido_por: Optional[int] = None 
+    produzido_por: Optional[int] = None
 
     @field_validator("preco")
     def preco_nao_negativo(cls, v: Optional[Decimal]):
@@ -34,13 +44,17 @@ class ProdutoUpdate(SQLModel):
 class GrupoAdicionalCreate(GrupoAdicionalBase):
     adicionais: Optional[list["AdicionalBase"]] = None
 
+
 class GrupoAdicionalRead(GrupoAdicionalBase):
     id: int
     adicionais: list["AdicionalRead"] = []
 
+
 class GrupoAdicionalUpdate(SQLModel):
     nome: Optional[str] = None
     max_selecoes: Optional[int] = None
+    min_selecoes: Optional[int] = None
+
 
 class AdicionalCreate(AdicionalBase):
     grupo_id: int
@@ -51,9 +65,11 @@ class AdicionalCreate(AdicionalBase):
             raise ValueError("O preço não pode ser negativo")
         return v
 
+
 class AdicionalRead(AdicionalBase):
     id: int
     grupo_id: int
+
 
 class AdicionalUpdate(SQLModel):
     nome: Optional[str] = None

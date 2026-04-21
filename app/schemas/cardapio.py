@@ -1,8 +1,10 @@
 from sqlmodel import SQLModel
 
+
 class CardapioPublicResponse(SQLModel):
     estabelecimento: "EstabelecimentoPublic"
     categorias: list["CategoriaPublic"]
+
 
 class EstabelecimentoPublic(SQLModel):
     nome: str
@@ -10,11 +12,13 @@ class EstabelecimentoPublic(SQLModel):
     slug: str
     logo_url: str | None
 
+
 class CategoriaPublic(SQLModel):
     id: int
     nome: str
     ordem: int
     produtos: list["ProdutoPublic"]
+
 
 class ProdutoPublic(SQLModel):
     id: int
@@ -25,7 +29,12 @@ class ProdutoPublic(SQLModel):
     disponivel: bool
     adicionais: list["AdicionalPublic"] = []
 
+
 class AdicionalPublic(SQLModel):
     id: int
     nome: str
     preco: float
+    grupo_id: int | None = None
+    grupo_nome: str | None = None
+    max_selecoes: int | None = None
+    min_selecoes: int | None = None
