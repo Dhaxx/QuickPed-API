@@ -2,7 +2,9 @@ from ..models.estabelecimento import EstabelecimentoBase, DiaFuncionamento, Opti
 
 class EstabelecimentoCreate(EstabelecimentoBase):
     dias_funcionamento: Optional[List[DiaFuncionamento]] = None
-    
+    auto_atendimento: Optional[bool] = False
+    delivery: Optional[bool] = False
+
 class EstabelecimentoRead(EstabelecimentoBase):
     id: int
     nome: str
@@ -11,6 +13,8 @@ class EstabelecimentoRead(EstabelecimentoBase):
     esta_aberto: bool
     slug: str
     logo_url: Optional[str] = None
+    auto_atendimento: bool
+    delivery: bool
 
 class EstabelecimentoUpdate(SQLModel):
     nome: Optional[str] = None
@@ -19,3 +23,5 @@ class EstabelecimentoUpdate(SQLModel):
     email: Optional[EmailStr] = None
     logo_url: Optional[str] = None
     esta_aberto: Optional[bool] = None
+    auto_atendimento: Optional[bool] = None
+    delivery: Optional[bool] = None

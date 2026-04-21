@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from .database.engine import create_db_and_tables, create_system_establishment, create_master_user
+from .database.engine import create_db_and_tables, create_system_establishment, create_master_user, create_parameters
 from .core.config import settings
 from .auth.router import router as autenticacao_router
 from .api.v1.admin.estabelecimento import router as estabelecimento_router
@@ -31,6 +31,7 @@ async def lifespan(app: FastAPI):
     create_db_and_tables()
     create_system_establishment()
     create_master_user()
+    create_parameters()
     yield
 
 

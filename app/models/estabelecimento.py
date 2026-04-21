@@ -45,3 +45,4 @@ class Estabelecimento(EstabelecimentoBase, table=True):
     pedidos: List["Pedido"] = Relationship(back_populates="estabelecimento")
     comandas: List["Comanda"] = Relationship(back_populates="estabelecimento")
     mesas: List["Mesa"] = Relationship(back_populates="estabelecimento")
+    parametros: Optional["Parametros"] = Relationship(back_populates="estabelecimento")
