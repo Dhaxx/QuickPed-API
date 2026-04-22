@@ -151,7 +151,7 @@ class PedidoService(BaseService[Pedido]):
 
         if data.mesa_token:
             mesa = session.exec(
-                select(Mesa).where(Mesa.token == data.mesa_token, Mesa.ativa == True)
+                select(Mesa).where(Mesa.token == data.mesa_token, Mesa.ativa == True, Mesa.estabelecimento_id == estabelecimento_id)
             ).first()
             if not mesa:
                 raise HTTPException(
