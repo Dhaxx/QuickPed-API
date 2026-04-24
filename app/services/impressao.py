@@ -30,6 +30,7 @@ class ImpressaoService:
             linhas.append(f"Preparador: {categoria.upper()}")
             linhas.append(f"Mesa: {pedido.get('numero_mesa')}")
             linhas.append(f"Cliente: {pedido.get('nome_cliente')}")
+            linhas.append(f"Data: {pedido.get('criado_em').strftime('%d/%m/%Y %H:%M:%S')}")
             
             # Centralizando [Itens] com preenchimento de '='
             titulo_itens = "[Itens]"
@@ -64,6 +65,7 @@ class ImpressaoService:
             "numero_mesa": pedido.numero_mesa,
             "nome_cliente": pedido.nome_cliente,
             "itens": pedido.itens,
+            "criado_em": pedido.criado_em,
         }
 
         texto_formatado = self.formatar_pedido(pedido_dict)
