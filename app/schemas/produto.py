@@ -30,6 +30,7 @@ class ProdutoUpdate(SQLModel):
     categoria_id: Optional[int] = None
     estabelecimento_id: Optional[int] = None
     ativo: Optional[bool] = None
+    imprime: Optional[bool] = None
     produzido_por: Optional[int] = None
 
     @field_validator("preco")

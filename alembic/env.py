@@ -12,6 +12,7 @@ from app.models.produto import Produto, GrupoAdicional, Adicional
 from app.models.pedido import Pedido
 from app.models.comanda import Comanda
 from app.models.mesa import Mesa
+from app.models.parametros import Parametros
 from app.core.config import settings
 
 config = context.config

@@ -1,4 +1,4 @@
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel, Relationship, Column, Boolean
 from typing import Optional
 from .estabelecimento import Estabelecimento
 
@@ -8,6 +8,7 @@ class CategoriaProdutoBase(SQLModel):
     ordem: int = Field(default=0)
     estabelecimento_id: int = Field(foreign_key="estabelecimento.id", index=True)
     produzido_por: Optional[int] = Field(default=None, foreign_key="usuario.id", index=True)
+    imprime: bool = Column(Boolean, nullable=False, default=True)
 
 class CategoriaProduto(CategoriaProdutoBase, table=True):
     __tablename__ = 'categoria_produto'

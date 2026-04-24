@@ -2,7 +2,7 @@ from sqlmodel import (
     SQLModel,
     Field,
     Relationship,
-    JSON,
+    Boolean,
     Column,
     Numeric,
     CheckConstraint,
@@ -27,6 +27,7 @@ class ProdutoBase(SQLModel):
     produzido_por: Optional[int] = Field(
         default=None, foreign_key="usuario.id", index=True
     )
+    imprime: bool = Column(Boolean, nullable=True)
 
 
 class Produto(ProdutoBase, table=True):

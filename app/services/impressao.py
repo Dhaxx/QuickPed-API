@@ -1,5 +1,6 @@
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from app.models.pedido import Pedido
+from app.models.produto import Produto, CategoriaProduto
 from fastapi import HTTPException
 
 class ImpressaoService:
@@ -7,10 +8,33 @@ class ImpressaoService:
         # Padrao para 58mm e aprox. 30-32 caracteres
         self.largura_papel = 32 
 
-    def formatar_pedido(self, pedido: dict) -> str:
+    def formatar_pedido(self, session: Session, pedido: dict) -> str:
         destino_producao = {}
 
+        produto_ids = list({
+            item["produto_id"]
+            for item in pedido.get("itens", [])
+        })
+
+        stmt = (
+            select(
+                Produto.id,
+                func.coalesce(Produto.imprime, CategoriaProduto.imprime).label("imprime_final")
+            )
+            .join(CategoriaProduto)
+            .where(Produto.id.in_(produto_ids))
+        )
+        result = session.exec(stmt).all()
+
+        imprime_map = {
+            produto_id: imprime_final
+            for produto_id, imprime_final in result
+        }
+
         for item in pedido.get("itens", []):
+            if not imprime_map.get(item["produto_id"]):
+                continue
+
             destino = item.get("produzido_por") or "GERAL"
             destino_producao.setdefault(destino, []).append({
                 "produto": item.get("nome_produto"),
@@ -68,7 +92,7 @@ class ImpressaoService:
             "criado_em": pedido.criado_em,
         }
 
-        texto_formatado = self.formatar_pedido(pedido_dict)
+        texto_formatado = self.formatar_pedido(session, pedido_dict)
 
         print(texto_formatado)
 
