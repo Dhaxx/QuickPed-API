@@ -25,4 +25,5 @@ class PedidoRead(SQLModel):
 
 
 class PedidoUpdate(SQLModel):
-    status: str
+    status: Optional[str] = None
+    oculto: Optional[bool] = None
