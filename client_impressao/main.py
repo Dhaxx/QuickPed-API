@@ -141,6 +141,42 @@ class ImpressoraClient:
             print(f"❌ Erro ao buscar fila de impressão: {e}")
             return []
 
+    def buscar_comandas_para_imprimir(self):
+        """Busca comandas com imprime=True"""
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            url = f"{self.api_url}/api/v1/admin/comanda/para-imprimir"
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            return []
+        except Exception as e:
+            print(f"❌ Erro ao buscar comandas: {e}")
+            return []
+
+    def chamar_endpoint_comanda(self, comanda_id: int):
+        """Chama o endpoint de impressão de comanda"""
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            url = f"{self.api_url}/api/v1/admin/Impressao/comanda/{comanda_id}"
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            logger.error(f"Erro ao imprimir comanda: {response.status_code}")
+            return None
+        except Exception as e:
+            logger.error(f"Erro ao chamar endpoint comanda: {e}")
+            return None
+
+    def marcar_comanda_impressa(self, comanda_id: int):
+        """Marca comanda como impressa"""
+        try:
+            headers = {"Authorization": f"Bearer {self.token}"}
+            url = f"{self.api_url}/api/v1/admin/comanda/impresso/{comanda_id}"
+            requests.post(url, headers=headers)
+        except Exception as e:
+            print(f"❌ Erro ao marcar comanda impressa: {e}")
+
     def marcar_impresso(self, pedido_id: int):
         """Marca pedido como impresso na API"""
         try:
@@ -245,6 +281,20 @@ class ImpressoraClient:
                     if resultado and resultado.get("texto"):
                         self.imprimir_texto(resultado["texto"], pedido_id)
                         self.marcar_impresso(pedido_id)
+
+                # Busca comandas com imprime=True
+                comandas = self.buscar_comandas_para_imprimir()
+
+                for comanda in comandas:
+                    comanda_id = comanda.get("id")
+
+                    print(f"🆕 Comanda para imprimir: #{comanda_id}")
+
+                    resultado = self.chamar_endpoint_comanda(comanda_id)
+
+                    if resultado and resultado.get("texto"):
+                        self.imprimir_texto(resultado["texto"], comanda_id)
+                        self.marcar_comanda_impressa(comanda_id)
 
                 time.sleep(self.intervalo)
 

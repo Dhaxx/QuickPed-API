@@ -123,5 +123,36 @@ class ComandaService(BaseService[Comanda]):
         session.refresh(comanda)
         return comanda
 
+    def marcar_impresso(
+        self,
+        session: Session,
+        comanda_id: int,
+        estabelecimento_id: int,
+        value: bool = True,
+    ):
+        comanda = session.exec(
+            select(Comanda).where(
+                Comanda.id == comanda_id,
+                Comanda.estabelecimento_id == estabelecimento_id,
+            )
+        ).first()
+        if not comanda:
+            raise HTTPException(status_code=404, detail="Comanda não encontrada")
+
+        comanda.imprime = value
+        session.add(comanda)
+        session.commit()
+        session.refresh(comanda)
+        return comanda
+
+    def get_para_imprimir(self, session: Session, estabelecimento_id: int):
+        comandas = session.exec(
+            select(Comanda).where(
+                Comanda.estabelecimento_id == estabelecimento_id,
+                Comanda.imprime == True,
+            )
+        ).all()
+        return comandas
+
 
 comanda_service = ComandaService(Comanda)

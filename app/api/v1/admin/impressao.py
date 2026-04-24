@@ -39,3 +39,12 @@ def marcar_impresso(
 ):
     pedido_service.marcar_impresso(session, pedido_id, estabelecimento_id, True)
     return {"message": "Pedido marcado como impresso"}
+
+
+@router.get("/comanda/{comanda_id}", status_code=status.HTTP_200_OK)
+def get_comanda_impressao(
+    comanda_id: int,
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+    session=Depends(get_session),
+):
+    return impressao_service.imprimir_comanda(session, comanda_id, estabelecimento_id)
