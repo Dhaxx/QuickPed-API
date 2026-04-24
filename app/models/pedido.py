@@ -57,6 +57,7 @@ class PedidoBase(SQLModel):
     nome_cliente: str = Field(min_length=1)
     numero_mesa: int = Field(index=True)
     obs: Optional[str] = None
+    oculto: bool = Field(default=False, index=True)
 
     itens: List[PedidoItem] = Field(sa_column=Column(JSON), default_factory=list)
 

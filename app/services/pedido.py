@@ -224,12 +224,14 @@ class PedidoService(BaseService[Pedido]):
             select(Pedido).where(
                 Pedido.comanda_id == comanda.id,
                 Pedido.estabelecimento_id == estabelecimento_id,
+                Pedido.oculto == False,
             )
         ).all()
 
     def get_all(self, session: Session, estabelecimento_id: int):
         stmt = select(Pedido).where(
             Pedido.estabelecimento_id == estabelecimento_id,
+            Pedido.oculto == False,
         )
         result = session.exec(stmt).all()
         return [
@@ -251,6 +253,7 @@ class PedidoService(BaseService[Pedido]):
             select(Pedido).where(
                 Pedido.estabelecimento_id == estabelecimento_id,
                 Pedido.status == StatusPedido.PENDENTE,
+                Pedido.oculto == False,
             )
         ).all()
 
@@ -259,6 +262,8 @@ class PedidoService(BaseService[Pedido]):
             select(Pedido).where(
                 Pedido.estabelecimento_id == estabelecimento_id,
                 Pedido.impresso == False,
+                Pedido.status not in [StatusPedido.ENTREGUE, StatusPedido.CANCELADO],
+                Pedido.oculto == False,
             )
         ).all()
 
@@ -273,6 +278,7 @@ class PedidoService(BaseService[Pedido]):
             select(Pedido).where(
                 Pedido.id == pedido_id,
                 Pedido.estabelecimento_id == estabelecimento_id,
+                Pedido.oculto == False,
             )
         ).first()
         if pedido:
