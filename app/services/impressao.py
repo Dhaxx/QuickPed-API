@@ -220,7 +220,7 @@ class ImpressaoService:
         stmt = select(Produto.nome, Produto.preco).where(Produto.id.in_(produto_ids))
         precos_db = {row[0]: row[1] for row in session.exec(stmt).all()}
 
-        linhas.append(f"{'Produto':<15} {'Uni.':<8} {'Total':<8}")
+        linhas.append(f"{'Produto':<12} {'Uni.':>8} {'Total':>9}")
         linhas.append("-" * self.largura_papel)
 
         total_comanda = Decimal("0.00")
@@ -246,8 +246,7 @@ class ImpressaoService:
             total_item_completo = total_item + (total_adicionais * quantidade)
             total_comanda += total_item_completo
 
-            linhas.append(f"{quantidade}x {nome}")
-            linhas.append(f"  R$ {preco_unitario:.2f}     R$ {total_item_completo:.2f}")
+            linhas.append( f"{quantidade}x {nome:<12}{preco_unitario:>8.2f}{total_item_completo:>9.2f}" )
             for la in linhas_adicionais:
                 linhas.append(la)
 
