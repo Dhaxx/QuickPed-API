@@ -50,11 +50,15 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
         content={"detail": "Too many attempts. Please try again later."},
     )
 
+origins = [
+    "https://quickped.com.br",
+    "https://www.quickped.com.br",
+]
 
 # Configuração de CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite todas as origens (ajuste conforme necessário)
+    allow_origins=origins,  # Permite todas as origens (ajuste conforme necessário)
     allow_methods=["*"],  # Permite todos os métodos HTTP
     allow_headers=["*"],  # Permite todos os headers
 )
