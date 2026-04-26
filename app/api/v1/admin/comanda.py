@@ -21,6 +21,39 @@ def get_comanda(
     return list(comanda_service.get_all(session, estabelecimento_id, status))
 
 
+@router.get(
+    "/para-imprimir", response_model=list[ComandaRead], status_code=status.HTTP_200_OK
+)
+def get_comandas_para_imprimir(
+    session=Depends(get_session),
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+):
+    return list(comanda_service.get_para_imprimir(session, estabelecimento_id))
+
+
+@router.post("/imprimir/{comanda_id}", status_code=status.HTTP_200_OK)
+def solicitar_impressao_comanda(
+    comanda_id: int,
+    session=Depends(get_session),
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+):
+    comanda_service.marcar_impresso(session, comanda_id, estabelecimento_id, True)
+    return {
+        "message": "Comanda adicionada na fila de impressão",
+        "comanda_id": comanda_id,
+    }
+
+
+@router.post("/impresso/{comanda_id}", status_code=status.HTTP_200_OK)
+def marcar_comanda_impressa(
+    comanda_id: int,
+    session=Depends(get_session),
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+):
+    comanda_service.marcar_impresso(session, comanda_id, estabelecimento_id, False)
+    return {"message": "Comanda marcada como impressa"}
+
+
 @router.put("/", response_model=ComandaRead, status_code=status.HTTP_201_CREATED)
 def update_comanda(
     comanda_id: int = Query(..., description="ID da comanda"),
