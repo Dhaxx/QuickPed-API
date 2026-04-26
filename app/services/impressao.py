@@ -2,7 +2,7 @@ from sqlmodel import Session, select, func
 from decimal import Decimal
 from app.models.pedido import Pedido
 from app.models.produto import Produto, CategoriaProduto
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 
 
 class ImpressaoService:
@@ -152,6 +152,13 @@ class ImpressaoService:
         texto_formatado = self.formatar_pedido(session, pedido_dict)
 
         print(texto_formatado)
+
+        if texto_formatado.strip() == "":
+            from app.services.pedido import pedido_service
+
+            pedido_service.marcar_impresso(session, pedido_id, estabelecimento_id, True)
+            
+            return Response(status_code=204)
 
         return {"pedido_id": pedido_id, "texto": texto_formatado}
 
