@@ -3,7 +3,8 @@ from app.models.produto import Adicional
 from app.models.estabelecimento import Estabelecimento
 from app.services.base import BaseService
 from ..schemas.pedido import PedidoCreate
-from sqlmodel import Session, select, update, func
+from sqlmodel import Session, select, update
+from sqlalchemy.orm.attributes import flag_modified
 from decimal import Decimal
 from app.services.produto import Produto
 from app.models.comanda import Comanda
@@ -126,20 +127,25 @@ class PedidoService(BaseService[Pedido]):
             total_pedido += subtotal_item
 
         itens_json_serializavel = []
+        itens_json_sequence = 0
+
         for i in itens_processados:
             adicionais_serializaveis = []
             for a in i.adicionais:
                 # se a veio do banco, deve ter id
                 adicionais_serializaveis.append(
                     {
-                        "id": getattr(a, "id", None),  # <- aqui você coloca o id
+                        "id": getattr(a, "id", None),
                         "nome": a.nome,
                         "preco": float(a.preco),
                     }
                 )
 
+            itens_json_sequence += 1
+
             itens_json_serializavel.append(
                 {
+                    "item_id": itens_json_sequence,
                     "produto_id": i.produto_id,
                     "nome_produto": i.nome_produto,
                     "preco_unitario": float(i.preco_unitario),
@@ -247,6 +253,62 @@ class PedidoService(BaseService[Pedido]):
             )
             for p in result
         ]
+    
+    def delete_item_pedido(self, session: Session, pedido_id:int, item_id:int, estabelecimento_id: int):
+        pedido = session.exec(
+            select(Pedido).where(
+                Pedido.id == pedido_id,
+                Pedido.estabelecimento_id == estabelecimento_id,
+                Pedido.oculto == False,
+            ).with_for_update(nowait=False)
+        ).first()
+
+        if not pedido:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Pedido não encontrado"
+            )
+
+        itens = pedido.itens
+        item_para_remover = None
+
+        for item in itens:
+            if item.get("item_id") == item_id:
+                item_para_remover = item
+                break
+
+        if not item_para_remover:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Item do pedido não encontrado"
+            )
+
+        itens.remove(item_para_remover)
+        flag_modified(pedido, "itens") # informa ao SQLAlchemy que a lista de itens foi modificada
+
+        # Recalcula o total do pedido
+        total_recalculado = Decimal("0.00")
+        for i in itens:
+            preco_unitario = Decimal(str(i.get("preco_unitario", "0.00")))
+            quantidade = Decimal(str(i.get("quantidade", "1")))
+            subtotal_item = preco_unitario * quantidade
+
+            adicionais = i.get("adicionais", [])
+            if adicionais:
+                for adicional in adicionais:
+                    preco_adicional = Decimal(str(adicional.get("preco", "0.00")))
+                    subtotal_item += preco_adicional * quantidade
+
+            total_recalculado += subtotal_item
+
+        pedido.itens = itens
+        pedido.total = total_recalculado
+
+        print(pedido.itens)
+
+        session.add(pedido)
+        session.commit()
+        session.refresh(pedido)
+
+        return pedido
 
     def get_pendentes(self, session: Session, estabelecimento_id: int):
         return session.exec(

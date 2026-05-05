@@ -26,6 +26,14 @@ def get_pedidos_pendentes(
 ):
     return list(pedido_service.get_pendentes(session, estabelecimento_id))
 
+@router.delete("/{pedido_id}/{item_id}", response_model=PedidoRead, status_code=status.HTTP_201_CREATED)
+def delete_item_do_pedido(
+    pedido_id: int,
+    item_id: int,
+    session=Depends(get_session),
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+):
+    return pedido_service.delete_item_pedido(session, pedido_id, item_id, estabelecimento_id)
 
 @router.get(
     "/para-imprimir", response_model=list[PedidoRead], status_code=status.HTTP_200_OK
