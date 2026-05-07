@@ -39,7 +39,7 @@ class PedidoItemAdicional(SQLModel):
 
 
 class PedidoItem(SQLModel):
-    item_id: int
+    item_id: Optional[int] = None
     produto_id: int
     nome_produto: str
     preco_unitario: Decimal = Field(
