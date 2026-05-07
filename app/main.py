@@ -52,9 +52,9 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
 
 origins = [
     "https://quickped.com.br",
-    "https://www.quickped.com.br",
-    "http://192.168.1.137:3000",
-    "http://192.168.0.134:3000",
+    "https://www.quickped.com.br"
+    #"http://192.168.1.137:3000",
+    #"http://192.168.0.134:3000"
 ]
 
 # Configuração de CORS
