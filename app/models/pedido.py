@@ -13,6 +13,7 @@ from enum import Enum
 from datetime import datetime
 from .estabelecimento import Estabelecimento
 from .comanda import Comanda
+from .cliente import Endereco
 from app.core.config import settings
 
 
@@ -23,6 +24,10 @@ class StatusPedido(str, Enum):
     ENTREGUE = "Entregue"
     CANCELADO = "Cancelado"
 
+class TipoPedido(str, Enum):
+    LOCAL  = "Local"
+    DELIVERY = "Delivery"
+    RETIRADA = "Retirada"
 
 class PedidoItemAdicional(SQLModel):
     id: int
@@ -56,7 +61,9 @@ class PedidoItem(SQLModel):
 
 class PedidoBase(SQLModel):
     nome_cliente: str = Field(min_length=1)
-    numero_mesa: int = Field(index=True)
+    numero_mesa: Optional[int] = Field(default=None, index=True)
+    tipo: TipoPedido = Field(default=TipoPedido.LOCAL, index=True)
+    endereco_id: Optional[int] = Field(default=None, foreign_key="endereco.id", index=True)
     obs: Optional[str] = None
     oculto: bool = Field(default=False, index=True)
 
@@ -66,7 +73,7 @@ class PedidoBase(SQLModel):
 class Pedido(PedidoBase, table=True):
     id: int = Field(primary_key=True)
     estabelecimento_id: int = Field(foreign_key="estabelecimento.id", index=True)
-    comanda_id: int = Field(foreign_key="comanda.id", index=True)
+    comanda_id: Optional[int] = Field(default=None, foreign_key="comanda.id", index=True)
     status: StatusPedido = Field(default=StatusPedido.PENDENTE, index=True)
     criado_em: datetime = Field(default_factory=settings.time_now)
     total: Decimal = Field(
@@ -79,4 +86,5 @@ class Pedido(PedidoBase, table=True):
     impresso: bool = Field(default=False, index=True)
 
     estabelecimento: "Estabelecimento" = Relationship(back_populates="pedidos")
-    comanda: "Comanda" = Relationship(back_populates="pedidos")
+    comanda: Optional["Comanda"] = Relationship(back_populates="pedidos")
+    delivery_endereco: Optional["Endereco"] = Relationship(back_populates="pedidos_delivery")

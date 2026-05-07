@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from sqlmodel import Session
 
-from ..database.engine import get_session
+from ...database.engine import get_session
 from app.models.usuario import Usuario
 from app.auth.jwt import SECRET_KEY, ALGORITHM
 

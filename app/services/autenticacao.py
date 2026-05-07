@@ -1,7 +1,7 @@
 from app.models.usuario import Usuario
 from app.services.base import BaseService
 from sqlmodel import Session, select
-from ..auth.hash import gerar_hash, verificar_hash
+from ..auth.admin.hash import gerar_hash, verificar_hash
 from fastapi import HTTPException
 
 

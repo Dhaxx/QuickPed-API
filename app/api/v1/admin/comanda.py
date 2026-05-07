@@ -3,7 +3,7 @@ from typing import Optional
 from app.schemas.comanda import ComandaRead, ComandaUpdate
 from app.services.comanda import comanda_service
 from app.database.engine import get_session
-from app.auth.dependencies import get_current_estabelecimento
+from app.auth.admin.dependencies import get_current_estabelecimento
 import logging
 
 router = APIRouter()

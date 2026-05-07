@@ -2,7 +2,7 @@ from app.models.estabelecimento import Estabelecimento, DiaFuncionamento, dias_d
 from app.services.base import BaseService
 from sqlmodel import Session, select, text
 from app.models.usuario import Usuario
-from ..auth.hash import gerar_hash
+from ..auth.admin.hash import gerar_hash
 from app.models.parametros import Parametros
 import re
 import unidecode

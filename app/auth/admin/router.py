@@ -1,19 +1,17 @@
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from sqlmodel import Session
-from ..database.engine import get_session
-from ..schemas.autenticacao import (
-    LoginRequest,
+from ...database.engine import get_session
+from ...schemas.autenticacao import (
     TokenResponse,
     UsuarioCreate,
     UsuarioRead,
 )
-from ..services.autenticacao import autenticacao_service
-from ..auth.jwt import criar_token
-from ..auth.dependencies import get_current_estabelecimento
+from ...services.autenticacao import autenticacao_service
+from ..jwt import criar_token
+from .dependencies import get_current_estabelecimento
 
 router = APIRouter()
 

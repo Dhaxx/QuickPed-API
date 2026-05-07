@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from app.schemas.pedido import PedidoCreate, PedidoRead, PedidoUpdate
 from app.services.pedido import pedido_service
-from app.auth.dependencies import get_current_estabelecimento
+from app.auth.admin.dependencies import get_current_estabelecimento
 from app.database.engine import get_session
 from app.models.pedido import StatusPedido
 

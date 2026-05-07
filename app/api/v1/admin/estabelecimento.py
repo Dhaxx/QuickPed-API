@@ -6,7 +6,7 @@ from app.schemas.estabelecimento import (
 )
 from app.services.estabelecimento import estabelecimento_service
 from app.database.engine import get_session
-from app.auth.dependencies import get_current_estabelecimento, require_master
+from app.auth.admin.dependencies import get_current_estabelecimento, require_master
 
 router = APIRouter()
 
