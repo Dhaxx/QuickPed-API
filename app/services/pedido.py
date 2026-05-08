@@ -37,7 +37,7 @@ class PedidoService(BaseService[Pedido]):
         comanda_id = None
         endereco_id = None
 
-        if data.tipo == "delivery":
+        if data.tipo == "Delivery":
             endereco_id = data.endereco_id
 
             if not endereco_id:
@@ -46,11 +46,11 @@ class PedidoService(BaseService[Pedido]):
                     detail="Nenhum endereço selecionado para pedido delivery",
                 )
 
-        elif data.tipo == "retirada":
+        elif data.tipo == "Retirada":
             # Para retirada, não precisa de endereço nem número da mesa
             pass
 
-        elif data.tipo == "local":
+        elif data.tipo == "Local":
             # Se veio token da mesa, busca por token. Senão, busca por número da mesa
             if data.mesa_token:
                 mesa = session.exec(
@@ -271,6 +271,8 @@ class PedidoService(BaseService[Pedido]):
                 total=str(p.total),
                 criado_em=p.criado_em.isoformat() if p.criado_em else None,
                 itens=p.itens,
+                tipo=p.tipo.value if hasattr(p.tipo, "value") else str(p.tipo),
+                endereco_id=p.endereco_id,
             )
             for p in result
         ]

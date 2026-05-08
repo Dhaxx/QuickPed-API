@@ -7,7 +7,7 @@ from app.core.config import settings
 
 class PedidoCreate(SQLModel):
     nome_cliente: str
-    numero_mesa: int
+    numero_mesa: Optional[int] = None
     obs: Optional[str] = None
     mesa_token: Optional[str] = None
     tipo: str = "Local"
@@ -18,7 +18,7 @@ class PedidoCreate(SQLModel):
 class PedidoRead(SQLModel):
     id: int
     nome_cliente: str
-    numero_mesa: int
+    numero_mesa: Optional[int] = None
     obs: Optional[str] = None
     status: str
     tipo: str
