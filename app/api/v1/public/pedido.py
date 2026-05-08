@@ -9,7 +9,7 @@ router = APIRouter()
 
 # Rotas dos Pedidos
 @router.post("/", response_model=PedidoRead, status_code=status.HTTP_201_CREATED)
-def create_Pedido( data: PedidoCreate, session = Depends(get_session), slug: str = None):
+def create_Pedido(data: PedidoCreate, session = Depends(get_session), slug: str = None):
     stmt = select(Estabelecimento.id).where(Estabelecimento.slug == slug)
     estabelecimento_id = session.exec(stmt).first()
 

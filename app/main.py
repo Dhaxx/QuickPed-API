@@ -7,23 +7,9 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from .database.engine import create_db_and_tables, create_system_establishment, create_master_user, create_parameters
 from .core.config import settings
-from .auth.router import router as autenticacao_router
-from .api.v1.admin.estabelecimento import router as estabelecimento_router
-from .api.v1.admin.categoria_produto import router as categ_produto_router
-from .api.v1.admin.produto import router as produto_router
-from .api.v1.admin.grupo_adicional import router as grupo_adicional_router
-from .api.v1.admin.adicional import router as adicional_router
-from .api.v1.admin.pedido import router as pedido_router
-from .api.v1.admin.comanda import router as comanda_router
-from .api.v1.admin.mesa import router as mesa_router
-from .api.v1.admin.impressao import router as impressao_router
-from .api.v1.public.mesa import router as public_mesa_router
-from .api.v1.public.cardapio import router as cardapio_router
-from .api.v1.public.pedido import router as public_pedido_router
-from .api.v1.public.comanda import router as public_comanda_router
+from .auth.admin.router import router as autenticacao_router
 
 limiter = Limiter(key_func=get_remote_address)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -67,6 +53,16 @@ app.add_middleware(
 )
 
 # Rotas Administrativas
+from .api.v1.admin.estabelecimento import router as estabelecimento_router
+from .api.v1.admin.categoria_produto import router as categ_produto_router
+from .api.v1.admin.produto import router as produto_router
+from .api.v1.admin.grupo_adicional import router as grupo_adicional_router
+from .api.v1.admin.adicional import router as adicional_router
+from .api.v1.admin.pedido import router as pedido_router
+from .api.v1.admin.comanda import router as comanda_router
+from .api.v1.admin.mesa import router as mesa_router
+from .api.v1.admin.impressao import router as impressao_router
+
 app.include_router(
     autenticacao_router,
     prefix="/api/v1/admin/autenticacao",
@@ -107,6 +103,14 @@ app.include_router(
 )
 
 # Rotas Públicas
+from .api.v1.public.mesa import router as public_mesa_router
+from .api.v1.public.cardapio import router as cardapio_router
+from .api.v1.public.pedido import router as public_pedido_router
+from .api.v1.public.comanda import router as public_comanda_router
+from .api.v1.public.comanda import router as public_comanda_router
+from .auth.public.router import router as public_auth_router
+from .api.v1.public.cliente import router as public_cliente_router
+
 app.include_router(
     cardapio_router, prefix="/api/v1/{slug}/cardapio", tags=["Public - Cardápio"]
 )
@@ -118,4 +122,10 @@ app.include_router(
 )
 app.include_router(
     public_comanda_router, prefix="/api/v1/{slug}/comanda", tags=["Public - Comanda"]
+)
+app.include_router(
+    public_auth_router, prefix="/api/v1/cliente/autenticacao", tags=["Public - Autenticação Cliente"]
+)
+app.include_router(
+    public_cliente_router, prefix="/api/v1/cliente", tags=["Public - Cliente"]
 )

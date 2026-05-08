@@ -5,9 +5,10 @@ from ..models.categoria_produto import CategoriaProduto
 from ..models.produto import Produto, GrupoAdicional, Adicional
 from ..models.pedido import Pedido
 from ..models.comanda import Comanda
+from ..models.cliente import Cliente, Endereco
 from ..models.usuario import Usuario
 from ..models.parametros import Parametros
-from ..auth.hash import gerar_hash
+from ..auth.admin.hash import gerar_hash
 
 if settings.sgbd_driver == "sqlite":
     engine = create_engine(settings.db_url, echo=True)
