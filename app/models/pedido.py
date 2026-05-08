@@ -24,10 +24,12 @@ class StatusPedido(str, Enum):
     ENTREGUE = "Entregue"
     CANCELADO = "Cancelado"
 
+
 class TipoPedido(str, Enum):
     LOCAL  = "Local"
     DELIVERY = "Delivery"
     RETIRADA = "Retirada"
+
 
 class PedidoItemAdicional(SQLModel):
     id: int

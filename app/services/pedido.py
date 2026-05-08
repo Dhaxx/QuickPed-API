@@ -15,60 +15,90 @@ from fastapi import HTTPException, status
 
 
 class PedidoService(BaseService[Pedido]):
-    def create(
-        self, session: Session, estabelecimento_id: int, data: PedidoCreate
-    ) -> Pedido:
-        if not data.nome_cliente or len(data.nome_cliente.strip()) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Nome do cliente é obrigatório",
-            )
-        
+    def create(self, session: Session, estabelecimento_id: int, data: PedidoCreate) -> Pedido:
         estabelecimento = session.get(Estabelecimento, estabelecimento_id)
 
         if not estabelecimento.esta_aberto:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Estabelecimento não está aberto",
-            )
-
+            )     
+        
         itens_processados = []
         total_pedido = Decimal("0.00")
 
-        mesa = session.exec(
-            select(Mesa).where(
-                Mesa.numero == data.numero_mesa,
-                Mesa.estabelecimento_id == estabelecimento_id,
-                Mesa.ativa == True,
-            )
-        ).first()
-
-        if not mesa:
+        if not data.nome_cliente or len(data.nome_cliente.strip()) == 0:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Mesa não encontrada"
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Nome do cliente é obrigatório",
             )
+        
+        numero_mesa = None
+        comanda_id = None
+        endereco_id = None
 
-        # Verifica se tem comanda aberta com lock (SELECT FOR UPDATE)
-        # Isso previne race condition onde duas requisições criam comandas duplicadas
-        # Usa nowait=False para esperar caso outra transação já esteja com lock
-        comanda = session.exec(
-            select(Comanda)
-            .where(
-                Comanda.status == "aberta",
-                Comanda.numero_mesa == data.numero_mesa,
-                Comanda.estabelecimento_id == estabelecimento_id,
-            )
-            .with_for_update(nowait=False)
-        ).first()
+        if data.tipo == "delivery":
+            endereco_id = data.endereco_id
 
-        if not comanda:
-            comanda = Comanda(
-                estabelecimento_id=estabelecimento_id,
-                numero_mesa=data.numero_mesa,
-                status="aberta",
-            )
-            session.add(comanda)
-            session.flush()
+            if not endereco_id:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Nenhum endereço selecionado para pedido delivery",
+                )
+
+        elif data.tipo == "retirada":
+            # Para retirada, não precisa de endereço nem número da mesa
+            pass
+
+        elif data.tipo == "local":
+            # Se veio token da mesa, busca por token. Senão, busca por número da mesa
+            if data.mesa_token:
+                mesa = session.exec(
+                    select(Mesa).where(Mesa.token == data.mesa_token, Mesa.ativa == True, Mesa.estabelecimento_id == estabelecimento_id)
+                ).one_or_none()
+
+                if not mesa:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND, detail="Mesa não encontrada"
+                    )
+            else:
+                mesa = session.exec(
+                    select(Mesa).where(
+                        Mesa.numero == data.numero_mesa,
+                        Mesa.estabelecimento_id == estabelecimento_id,
+                        Mesa.ativa == True,
+                    )
+                ).one_or_none()
+
+                if not mesa:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND, detail="Mesa não encontrada"
+                    )
+            numero_mesa = mesa.numero
+
+            # Verifica se tem comanda aberta com lock (SELECT FOR UPDATE)
+            # Isso previne race condition onde duas requisições criam comandas duplicadas
+            # Usa nowait=False para esperar caso outra transação já esteja com lock
+            comanda = session.exec(
+                select(Comanda)
+                .where(
+                    Comanda.status == "aberta",
+                    Comanda.numero_mesa == numero_mesa,
+                    Comanda.estabelecimento_id == estabelecimento_id,
+                )
+                .with_for_update(nowait=False)
+            ).one_or_none()
+
+            if not comanda:
+                comanda = Comanda(
+                    estabelecimento_id=estabelecimento_id,
+                    numero_mesa=numero_mesa,
+                    status="aberta",
+                )
+                session.add(comanda)
+                session.flush()
+                session.refresh(comanda)
+            comanda_id = comanda.id
 
         for item_data in data.itens:
             item = item_data if isinstance(item_data, dict) else item_data.model_dump()
@@ -110,7 +140,7 @@ class PedidoService(BaseService[Pedido]):
             if produto.produzido_por is not None:
                 produtor = session.exec(
                     select(Usuario.usuario).where(Usuario.id == produto.produzido_por)
-                ).first()
+                ).one_or_none()
             else:
                 produtor = None
 
@@ -155,38 +185,29 @@ class PedidoService(BaseService[Pedido]):
                 }
             )
 
-        if data.mesa_token:
-            mesa = session.exec(
-                select(Mesa).where(Mesa.token == data.mesa_token, Mesa.ativa == True, Mesa.estabelecimento_id == estabelecimento_id)
-            ).first()
-            if not mesa:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail="Mesa não encontrada"
-                )
-            numero_mesa = mesa.numero
-        else:
-            numero_mesa = data.numero_mesa
-
         pedido = Pedido(
             estabelecimento_id=estabelecimento_id,
-            comanda_id=comanda.id,
+            comanda_id=comanda_id,
             nome_cliente=data.nome_cliente,
             numero_mesa=numero_mesa,
             itens=itens_json_serializavel,
             total=total_pedido,
             obs=data.obs,
+            tipo=data.tipo,
+            endereco_id=endereco_id,
         )
 
         # Update atômico do total da comanda
         # IMPORTANTE: Isso previne race condition onde dois pedidos simultâneos
         # podem sobrescrever o total um do outro ao invés de somar corretamente
         # Sintaxe: UPDATE comanda SET total = total + :valor WHERE id = :id
-        comanda_id = comanda.id
-        session.exec(
-            update(Comanda)
-            .where(Comanda.id == comanda_id)
-            .values(total=Comanda.total + total_pedido)
-        )
+        if data.tipo == "local":
+            comanda_id = comanda.id
+            session.exec(
+                update(Comanda)
+                .where(Comanda.id == comanda_id)
+                .values(total=Comanda.total + total_pedido)
+            )
 
         session.add(pedido)
         session.commit()

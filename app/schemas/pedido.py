@@ -10,8 +10,9 @@ class PedidoCreate(SQLModel):
     numero_mesa: int
     obs: Optional[str] = None
     mesa_token: Optional[str] = None
-    tipo: Optional[str] = None
+    tipo: str = "Local"
     itens: list = Field(default_factory=list)
+    endereco_id: Optional[int] = None
 
 
 class PedidoRead(SQLModel):
@@ -20,10 +21,11 @@ class PedidoRead(SQLModel):
     numero_mesa: int
     obs: Optional[str] = None
     status: str
-    tipo: Optional[str] = "Local"
+    tipo: str
     total: Decimal
     criado_em: datetime = Field(default_factory=settings.time_now)
     itens: list = Field(default_factory=list)
+    endereco: Optional[int] = None
 
 
 class PedidoUpdate(SQLModel):
