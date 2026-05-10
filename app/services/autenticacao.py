@@ -39,7 +39,10 @@ class UsuarioService(BaseService[Usuario]):
     ) -> Usuario:
         senha_hash = gerar_hash(senha)
         novo_usuario = self.create(session, {"usuario": usuario, "senha_hash": senha_hash, "estabelecimento_id": estabelecimento_id})
-        self.criar_permissoes_usuario(session, novo_usuario.id)
+
+        if novo_usuario.admin:
+            self.criar_permissoes_usuario(session, novo_usuario.id)
+            
         return novo_usuario
 
 

@@ -93,7 +93,10 @@ def create_parameters():
 def create_registered_users_permissions():
     with Session(engine) as session:
         usuarios_sem_permissoes = session.exec(
-            select(Usuario).where(~Usuario.id.in_(select(PermissaoUsuario.usuario_id)))
+            select(Usuario).where(
+                Usuario.admin == True,
+                ~Usuario.id.in_(select(PermissaoUsuario.usuario_id)),
+            )
         ).all()
 
         for usuario in usuarios_sem_permissoes:
