@@ -8,6 +8,7 @@ from ..models.comanda import Comanda
 from ..models.cliente import Cliente, Endereco
 from ..models.usuario import Usuario
 from ..models.parametros import Parametros
+from ..models.permissoes import PermissaoUsuario
 from ..auth.admin.hash import gerar_hash
 
 if settings.sgbd_driver == "sqlite":
@@ -25,6 +26,7 @@ else:
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
+
 
 def create_system_establishment():
     with Session(engine) as session:
@@ -46,6 +48,7 @@ def create_system_establishment():
             session.add(estabelecimento)
             session.commit()
             session.refresh(estabelecimento)
+
 
 def create_master_user():
     with Session(engine) as session:
@@ -72,9 +75,11 @@ def create_master_user():
         session.add(user)
         session.commit()
 
+
 def get_session():
     with Session(engine) as session:
         yield session
+
 
 def create_parameters():
     with Session(engine) as session:
@@ -82,4 +87,17 @@ def create_parameters():
             if not estabelecimento.parametros:
                 parametros = Parametros(estabelecimento_id=estabelecimento.id)
                 session.add(parametros)
+        session.commit()
+
+
+def create_registered_users_permissions():
+    with Session(engine) as session:
+        usuarios_sem_permissoes = session.exec(
+            select(Usuario).where(~Usuario.id.in_(select(PermissaoUsuario.usuario_id)))
+        ).all()
+
+        for usuario in usuarios_sem_permissoes:
+            permissao = PermissaoUsuario(usuario_id=usuario.id)
+            session.add(permissao)
+
         session.commit()

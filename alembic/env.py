@@ -13,7 +13,8 @@ from app.models.pedido import Pedido
 from app.models.comanda import Comanda
 from app.models.mesa import Mesa
 from app.models.parametros import Parametros
-from app.models.cliente import Cliente
+from app.models.cliente import Cliente, Endereco
+from app.models.permissoes import PermissaoUsuario
 from app.core.config import settings
 
 config = context.config

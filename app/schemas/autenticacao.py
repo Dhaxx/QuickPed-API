@@ -1,17 +1,11 @@
 from ..models.usuario import UsuarioBase, SQLModel
 from pydantic import field_validator
+from ..models.permissoes import PermissoesEnum
 
 
 class LoginRequest(SQLModel):
     usuario: str
     senha: str
-
-
-class TokenResponse(SQLModel):
-    usuario_id: int
-    estabelecimento_id: int
-    access_token: str
-    token_type: str = "bearer"
 
 
 class UsuarioCreate(UsuarioBase):
@@ -31,4 +25,21 @@ class UsuarioRead(UsuarioBase):
     estabelecimento_id: int
     ativo: bool
     admin: bool
-    master: bool
+
+
+class PermissoesRead(SQLModel):
+    dashboard: PermissoesEnum
+    pedidos: PermissoesEnum
+    comandas: PermissoesEnum
+    produtos: PermissoesEnum
+    mesas: PermissoesEnum
+    estabelecimento: PermissoesEnum
+    usuarios: PermissoesEnum
+
+
+class UsuarioLoginRead(SQLModel):
+    access_token: str
+    token_type: str = "bearer"
+    usuario_id: int
+    estabelecimento_id: int
+    permissoes: PermissoesRead

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, status
 from app.schemas.categoria_produto import CategoriaProdutoCreate, CategoriaProdutoRead, CategoriaProdutoUpdate
 from app.services.categoria_produto import categoria_produto_service
 from app.database.engine import get_session
-from app.auth.admin.dependencies import get_current_user, get_current_estabelecimento
+from app.auth.admin.dependencies import get_current_estabelecimento, require_permission
 
 router = APIRouter()
 
@@ -10,7 +10,8 @@ router = APIRouter()
 def create_categoria_produto(
     data: CategoriaProdutoCreate,
     session = Depends(get_session),
-    estabelecimento_id: int = Depends(get_current_estabelecimento)
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("categorias_produto", "editar"))
 ):
     dados = data.model_dump()
 
@@ -21,7 +22,8 @@ def create_categoria_produto(
 @router.get("/", response_model=list[CategoriaProdutoRead], status_code=status.HTTP_200_OK)
 def get_categoria_produtos(
     session = Depends(get_session),
-    estabelecimento_id: int = Depends(get_current_estabelecimento)
+    estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("categorias_produto", "visualizar"))
 ):
     return categoria_produto_service.get(session, estabelecimento_id)
 

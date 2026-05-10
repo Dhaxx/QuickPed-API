@@ -27,3 +27,4 @@ class Usuario(UsuarioBase, table=True):
     categorias: list["CategoriaProduto"] = Relationship(
         back_populates="produzido_por_usuario"
     )
+    permissoes: "PermissaoUsuario" = Relationship(back_populates="usuario")

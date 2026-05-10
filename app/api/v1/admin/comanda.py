@@ -3,7 +3,7 @@ from typing import Optional
 from app.schemas.comanda import ComandaRead, ComandaUpdate
 from app.services.comanda import comanda_service
 from app.database.engine import get_session
-from app.auth.admin.dependencies import get_current_estabelecimento
+from app.auth.admin.dependencies import get_current_estabelecimento, require_permission
 import logging
 
 router = APIRouter()
@@ -17,6 +17,7 @@ def get_comanda(
     ),
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("comandas", "visualizar"))
 ):
     return list(comanda_service.get_all(session, estabelecimento_id, status))
 
@@ -27,6 +28,7 @@ def get_comanda(
 def get_comandas_para_imprimir(
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("comandas", "visualizar"))
 ):
     return list(comanda_service.get_para_imprimir(session, estabelecimento_id))
 
@@ -36,6 +38,7 @@ def solicitar_impressao_comanda(
     comanda_id: int,
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("comandas", "editar"))
 ):
     comanda_service.marcar_impresso(session, comanda_id, estabelecimento_id, True)
     return {
@@ -49,6 +52,7 @@ def marcar_comanda_impressa(
     comanda_id: int,
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("comandas", "editar"))
 ):
     comanda_service.marcar_impresso(session, comanda_id, estabelecimento_id, False)
     return {"message": "Comanda marcada como impressa"}
@@ -60,6 +64,7 @@ def update_comanda(
     body: Optional[ComandaUpdate] = None,
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("comandas", "editar"))
 ):
     logger.info(
         f"update_comanda called: comanda_id={comanda_id}, body={body}, forcar={body.forcar if body else None}"
