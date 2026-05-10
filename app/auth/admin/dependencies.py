@@ -48,3 +48,29 @@ def require_master(current_user: Usuario = Depends(get_current_user)) -> Usuario
             status_code=403, detail="Apenas usuários master podem realizar esta ação"
         )
     return current_user
+
+
+def require_permission(modulo: str, acao: str):
+    """Valida se usuário tem permissão para um módulo/ação"""
+    async def check_permission(
+        current_user: Usuario = Depends(get_current_user),
+    ) -> Usuario:
+        # Verifica permissão específica
+        permissao = current_user.permissoes
+        if not permissao:
+            raise HTTPException(status_code=403, detail="Sem permissões")
+        
+        nivel = getattr(permissao, modulo, None)
+        if nivel == "bloqueado":
+            raise HTTPException(
+                status_code=403, 
+                detail=f"Sem permissão para {acao} em {modulo}"
+            )
+        
+        # Se precisa de "editar", verifica se tem pelo menos esse nível
+        if acao == "editar" and nivel != "editar":
+            raise HTTPException(status_code=403, detail="Sem permissão para editar")
+        
+        return current_user
+    
+    return check_permission

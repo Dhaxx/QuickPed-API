@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from app.schemas.pedido import PedidoCreate, PedidoRead, PedidoUpdate
 from app.services.pedido import pedido_service
-from app.auth.admin.dependencies import get_current_estabelecimento
+from app.auth.admin.dependencies import get_current_estabelecimento, require_permission
 from app.database.engine import get_session
 from app.models.pedido import StatusPedido
 
@@ -11,6 +11,7 @@ router = APIRouter()
 def get_Pedidos(
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("pedidos", "visualizar"))
 ):
     result = pedido_service.get_all(session, estabelecimento_id)
     return result
@@ -22,6 +23,7 @@ def get_Pedidos(
 def get_pedidos_pendentes(
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("pedidos", "visualizar"))
 ):
     return list(pedido_service.get_pendentes(session, estabelecimento_id))
 
@@ -32,6 +34,7 @@ def delete_item_do_pedido(
     item_id: int,
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("pedidos", "editar"))
 ):
     return pedido_service.delete_item_pedido(session, pedido_id, item_id, estabelecimento_id)
 
@@ -42,6 +45,7 @@ def delete_item_do_pedido(
 def get_pedidos_para_imprimir(
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("pedidos", "visualizar"))
 ):
     return list(pedido_service.get_para_imprimir(session, estabelecimento_id))
 
@@ -52,6 +56,7 @@ def update_Pedido(
     data: PedidoUpdate,
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("pedidos", "editar"))
 ):
     dados = data.model_dump(exclude_unset=True)
     return pedido_service.update(session, Pedido_id, dados, estabelecimento_id)
@@ -62,5 +67,6 @@ def delete_Pedido(
     Pedido_id: int,
     session=Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("pedidos", "editar"))
 ):
     return pedido_service.delete(session, Pedido_id, estabelecimento_id)

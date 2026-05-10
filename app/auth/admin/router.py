@@ -5,20 +5,20 @@ from slowapi.util import get_remote_address
 from sqlmodel import Session
 from ...database.engine import get_session
 from ...schemas.autenticacao import (
-    TokenResponse,
+    UsuarioLoginRead,
     UsuarioCreate,
     UsuarioRead,
 )
 from ...services.autenticacao import autenticacao_service
 from ..jwt import criar_token
-from .dependencies import get_current_estabelecimento
+from .dependencies import get_current_estabelecimento, require_permission
 
 router = APIRouter()
 
 limiter = Limiter(key_func=get_remote_address)
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=UsuarioLoginRead)
 @limiter.limit("5/15minutes")
 def login(
     request: Request,
@@ -36,11 +36,12 @@ def login(
         {"user_id": usuario.id, "estabelecimento_id": usuario.estabelecimento_id}
     )
 
-    return {
-        "access_token": token,
-        "usuario_id": usuario.id,
-        "estabelecimento_id": usuario.estabelecimento_id,
-    }
+    return UsuarioLoginRead(
+        access_token=token,
+        usuario_id=usuario.id,
+        estabelecimento_id=usuario.estabelecimento_id,
+        permissoes=usuario.permissoes,
+    )
 
 
 @router.post("/registrar", response_model=UsuarioRead)
@@ -48,6 +49,7 @@ def registrar(
     data: UsuarioCreate,
     session: Session = Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("usuarios", "editar"))
 ):
     usuario = autenticacao_service.registrar(
         session, data.usuario, data.senha, estabelecimento_id
@@ -63,5 +65,6 @@ def registrar(
 def listar_usuarios(
     session: Session = Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
+    _=Depends(require_permission("usuarios", "visualizar"))
 ):
     return autenticacao_service.get(session, estabelecimento_id)
