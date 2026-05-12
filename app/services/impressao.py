@@ -180,11 +180,12 @@ class ImpressaoService:
                 f"{Decimal(row.total_item):>9.2f}"
             )
 
-            if row.nome_adicional:
-                linhas.append(
-                    f"  + {row.nome_adicional} "
-                    f"{Decimal(row.preco_adicional):.2f}"
-                )
+            if row.adicionais:
+                for adicional in row.adicionais:
+                    linhas.append(
+                        f"  + {adicional[0]} "
+                        f"{Decimal(adicional[1]):.2f}"
+                    )
 
             total_comanda += Decimal(row.total_item)
 
@@ -202,79 +203,49 @@ class ImpressaoService:
         self, session: Session, comanda_id: int, estabelecimento_id: int
     ) -> dict:
         stmt = """
-        with itens as (
-            select
-                p.comanda_id,
-                c.numero_mesa,
-                c.status,
-                item->>'produto_id' as produto_id,
-                item->>'nome_produto' as nome_produto,
-                coalesce(
-                        (item->>'preco_unitario')::numeric,
-                        0
-                    ) as preco_unitario,
-                coalesce(
-                        (item->>'quantidade')::numeric,
-                        0
-                    ) as quantidade,
-                item->'adicionais' as adicionais
-            from
-                pedido p
-            join comanda c
-                    on
-                c.id = p.comanda_id
-            cross join lateral jsonb_array_elements(p.itens::jsonb) as item
-            where
-                p.comanda_id = :id
-                and p.oculto = false
-            ),
-            adicionais as (
-            select
-                i.comanda_id,
-                i.numero_mesa,
-                i.status,
-                i.produto_id,
-                i.nome_produto,
-                i.preco_unitario,
-                i.quantidade,
-                adicional->>'nome' as nome_adicional,
-                coalesce(
-                        (adicional->>'preco')::numeric,
-                        0
-                    ) as preco_adicional
-            from
-                itens i
-            left join lateral jsonb_array_elements(i.adicionais) adicional
-                    on
-                true
-        )
+        with itens_comanda as (
         select
             comanda_id,
             numero_mesa,
-            status,
-            produto_id,
-            nome_produto,
-            SUM(quantidade) as quantidade,
-            preco_unitario,
-            nome_adicional,
-            preco_adicional,
-            (
-                (preco_unitario + coalesce(preco_adicional, 0))
-                * SUM(quantidade)
-            ) as total_item
+            concat(p.id,'.',item->>'item_id'::text) item_id,
+            item->>'nome_produto' as nome_produto,
+            adicional->>'nome' adicional,
+            (item->>'preco_unitario')::numeric preco_unitario,
+            coalesce((adicional->>'preco'), '0')::numeric preco_unitario_add,
+            (item->>'quantidade')::numeric quantidade
         from
-            adicionais
-        group by
+            pedido p
+        cross join lateral jsonb_array_elements(itens::jsonb) as item
+        left join lateral jsonb_array_elements(item->'adicionais') as adicional on
+            true
+        where
+            comanda_id = :id)
+        select
             comanda_id,
+            c.status,
             numero_mesa,
-            status,
-            produto_id,
+            item_id,
+            nome_produto,
+            jsonb_agg( jsonb_build_array( adicional, preco_unitario_add ) ) AS adicionais,
+            quantidade,
+            preco_unitario,
+            quantidade*preco_unitario+sum(ic.preco_unitario_add) total_item
+        from
+            itens_comanda ic
+        join (
+            select
+                id comanda_id,
+                status
+            from
+                comanda) c
+                using (comanda_id)
+        group by comanda_id,
+            c.status,
+            numero_mesa,
+            item_id,
             nome_produto,
             preco_unitario,
-            nome_adicional,
-            preco_adicional
-        order by
-            nome_produto
+            quantidade
         """
 
         rows = session.exec( text(stmt), params={"id": comanda_id} ).all()
