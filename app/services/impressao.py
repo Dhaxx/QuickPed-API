@@ -232,7 +232,7 @@ class ImpressaoService:
             jsonb_agg( jsonb_build_array( adicional, preco_unitario_add ) ) AS adicionais,
             quantidade,
             preco_unitario,
-            quantidade*preco_unitario+sum(ic.preco_unitario_add) total_item
+            (ic.preco_unitario + sum(ic.preco_unitario_add)) * ic.quantidade total_item
         from
             itens_comanda ic
         join (
