@@ -243,7 +243,7 @@ class ImpressaoService:
                 linhas_adicionais.append(f"  + {nome_adj}  {preco_adj:.2f}")
                 total_adicionais += preco_adj
 
-            total_item_completo = total_item + (total_adicionais * quantidade)
+            total_item_completo = total_item + total_adicionais
             total_comanda += total_item_completo
 
             linhas.append( f"{quantidade}x {nome:<12}{preco_unitario:>8.2f}{total_item_completo:>9.2f}" )
