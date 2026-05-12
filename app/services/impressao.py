@@ -222,7 +222,8 @@ class ImpressaoService:
         left join lateral jsonb_array_elements(item->'adicionais') as adicional on
             true
         where
-            comanda_id = :id)
+            comanda_id = :id
+            and p.estabelecimento_id = :estabelecimento_id)
         select
             comanda_id,
             c.status,
