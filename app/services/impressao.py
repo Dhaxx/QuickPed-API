@@ -1,4 +1,4 @@
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, text
 from decimal import Decimal
 from app.models.pedido import Pedido
 from app.models.produto import Produto, CategoriaProduto
@@ -157,101 +157,43 @@ class ImpressaoService:
         return {"pedido_id": pedido_id, "texto": texto_formatado}
 
     def formatar_comanda(
-        self, session: Session, comanda: "Comanda", pedidos: list[Pedido]
+        self, session: Session, comanda: list[tuple]
     ) -> str:
-        from app.models.comanda import Comanda
         from decimal import Decimal
 
         linhas = []
-        linhas.append(f"[Comanda #{comanda.id}]".center(self.largura_papel, "="))
-        linhas.append(f"Mesa: {comanda.numero_mesa}")
-        linhas.append(f"Status: {comanda.status.value.upper()}")
+
+        linhas.append(f"[Comanda #{comanda[0].comanda_id}]".center(self.largura_papel, "="))
+        linhas.append(f"Mesa: {comanda[0].numero_mesa}")
+        linhas.append(f"Status: {comanda[0].status}")
         linhas.append("=" * self.largura_papel)
-
-        produto_ids = set()
-        itens_por_produto = {}
-
-        for pedido in pedidos:
-            for item in pedido.itens:
-                produto_id = (
-                    item.get("produto_id")
-                    if isinstance(item, dict)
-                    else item.produto_id
-                )
-                produto_ids.add(produto_id)
-
-                nome_produto = (
-                    item.get("nome_produto")
-                    if isinstance(item, dict)
-                    else item.nome_produto
-                )
-                preco_unitario = (
-                    item.get("preco_unitario")
-                    if isinstance(item, dict)
-                    else item.preco_unitario
-                )
-                quantidade = (
-                    item.get("quantidade")
-                    if isinstance(item, dict)
-                    else item.quantidade
-                )
-                adicionais = (
-                    item.get("adicionais", [])
-                    if isinstance(item, dict)
-                    else item.adicionais
-                )
-
-                nomes_adicionais = frozenset(
-                    adj.get("nome") if isinstance(adj, dict) else adj.nome
-                    for adj in adicionais
-                )
-                key = (produto_id, nomes_adicionais)
-
-                if key not in itens_por_produto:
-                    itens_por_produto[key] = {
-                        "nome_produto": nome_produto,
-                        "quantidade": 0,
-                        "preco_unitario": preco_unitario,
-                        "adicionais": adicionais,
-                    }
-                itens_por_produto[key]["quantidade"] += quantidade
-                #itens_por_produto[key]["adicionais"].extend(adicionais)
-
-        stmt = select(Produto.nome, Produto.preco).where(Produto.id.in_(produto_ids))
-        precos_db = {row[0]: row[1] for row in session.exec(stmt).all()}
 
         linhas.append(f"{'Produto':<12} {'Uni.':>8} {'Total':>9}")
         linhas.append("-" * self.largura_papel)
-
         total_comanda = Decimal("0.00")
 
-        for produto_id, item_data in itens_por_produto.items():
-            nome = item_data["nome_produto"][:15]
-            preco_unitario = Decimal(str(item_data["preco_unitario"]))
-            quantidade = item_data["quantidade"]
-            total_item = preco_unitario * quantidade
+        for row in comanda:
+            linhas.append(
+                f"{int(row.quantidade)}x "
+                f"{row.nome_produto[:12]:<12}"
+                f"{Decimal(row.preco_unitario):>8.2f}"
+                f"{Decimal(row.total_item):>9.2f}"
+            )
 
-            total_adicionais = Decimal("0.00")
-            linhas_adicionais = []
-            for adicional in item_data["adicionais"]:
-                if isinstance(adicional, dict):
-                    nome_adj = adicional.get("nome", "")
-                    preco_adj = Decimal(str(adicional.get("preco", "0.00")))
-                else:
-                    nome_adj = adicional.nome
-                    preco_adj = Decimal(str(adicional.preco))
-                linhas_adicionais.append(f"  + {nome_adj}  {preco_adj:.2f}")
-                total_adicionais += preco_adj
+            if row.nome_adicional:
+                linhas.append(
+                    f"  + {row.nome_adicional} "
+                    f"{Decimal(row.preco_adicional):.2f}"
+                )
 
-            total_item_completo = total_item + (total_adicionais * quantidade)
-            total_comanda += total_item_completo
-
-            linhas.append( f"{quantidade}x {nome:<12}{preco_unitario:>8.2f}{total_item_completo:>9.2f}" )
-            for la in linhas_adicionais:
-                linhas.append(la)
+            total_comanda += Decimal(row.total_item)
 
         linhas.append("=" * self.largura_papel)
-        linhas.append(f"TOTAL: R$ {total_comanda:.2f}".center(self.largura_papel))
+        linhas.append(
+            f"TOTAL: R$ {total_comanda:.2f}".center(
+                self.largura_papel
+            )
+        )
         linhas.append("=" * self.largura_papel)
 
         return "\n".join(linhas)
@@ -259,32 +201,88 @@ class ImpressaoService:
     def imprimir_comanda(
         self, session: Session, comanda_id: int, estabelecimento_id: int
     ) -> dict:
-        from app.models.comanda import Comanda
+        stmt = """
+        with itens as (
+            select
+                p.comanda_id,
+                c.numero_mesa,
+                c.status,
+                item->>'produto_id' as produto_id,
+                item->>'nome_produto' as nome_produto,
+                coalesce(
+                        (item->>'preco_unitario')::numeric,
+                        0
+                    ) as preco_unitario,
+                coalesce(
+                        (item->>'quantidade')::numeric,
+                        0
+                    ) as quantidade,
+                item->'adicionais' as adicionais
+            from
+                pedido p
+            join comanda c
+                    on
+                c.id = p.comanda_id
+            cross join lateral jsonb_array_elements(p.itens::jsonb) as item
+            where
+                p.comanda_id = :id
+                and p.oculto = false
+            ),
+            adicionais as (
+            select
+                i.comanda_id,
+                i.numero_mesa,
+                i.status,
+                i.produto_id,
+                i.nome_produto,
+                i.preco_unitario,
+                i.quantidade,
+                adicional->>'nome' as nome_adicional,
+                coalesce(
+                        (adicional->>'preco')::numeric,
+                        0
+                    ) as preco_adicional
+            from
+                itens i
+            left join lateral jsonb_array_elements(i.adicionais) adicional
+                    on
+                true
+        )
+        select
+            comanda_id,
+            numero_mesa,
+            status,
+            produto_id,
+            nome_produto,
+            SUM(quantidade) as quantidade,
+            preco_unitario,
+            nome_adicional,
+            preco_adicional,
+            (
+                (preco_unitario + coalesce(preco_adicional, 0))
+                * SUM(quantidade)
+            ) as total_item
+        from
+            adicionais
+        group by
+            comanda_id,
+            numero_mesa,
+            status,
+            produto_id,
+            nome_produto,
+            preco_unitario,
+            nome_adicional,
+            preco_adicional
+        order by
+            nome_produto
+        """
 
-        comanda = session.exec(
-            select(Comanda).where(
-                Comanda.id == comanda_id,
-                Comanda.estabelecimento_id == estabelecimento_id,
-            )
-        ).first()
+        rows = session.exec( text(stmt), params={"id": comanda_id} ).all()
 
-        if not comanda:
-            raise HTTPException(status_code=404, detail="Comanda não encontrada")
+        if not rows:
+            raise HTTPException(status_code=500, detail="Erro ao gerar comanda: sem itens encontrados")
 
-        pedidos = session.exec(
-            select(Pedido).where(
-                Pedido.comanda_id == comanda_id,
-                Pedido.estabelecimento_id == estabelecimento_id,
-                Pedido.oculto == False,
-            )
-        ).all()
-
-        if not pedidos:
-            raise HTTPException(
-                status_code=404, detail="Nenhum pedido encontrado para esta comanda"
-            )
-
-        texto_formatado = self.formatar_comanda(session, comanda, pedidos)
+        texto_formatado = self.formatar_comanda(session, rows)
         print(texto_formatado)
 
         return {"comanda_id": comanda_id, "texto": texto_formatado}
