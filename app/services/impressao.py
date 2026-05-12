@@ -181,10 +181,10 @@ class ImpressaoService:
             )
 
             if row.adicionais:
-                if adicional[0] == None:
-                    continue
-
                 for adicional in row.adicionais:
+                    if adicional[0] == None:
+                        continue
+
                     linhas.append(
                         f"  + {adicional[0]} "
                         f"{Decimal(adicional[1]):.2f}"
