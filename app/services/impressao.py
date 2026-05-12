@@ -181,6 +181,9 @@ class ImpressaoService:
             )
 
             if row.adicionais:
+                if adicional[0] == None:
+                    continue
+
                 for adicional in row.adicionais:
                     linhas.append(
                         f"  + {adicional[0]} "
