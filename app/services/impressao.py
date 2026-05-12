@@ -215,7 +215,7 @@ class ImpressaoService:
                         "adicionais": [],
                     }
                 itens_por_produto[key]["quantidade"] += quantidade
-                itens_por_produto[key]["adicionais"].extend(adicionais)
+                #itens_por_produto[key]["adicionais"].extend(adicionais)
 
         stmt = select(Produto.nome, Produto.preco).where(Produto.id.in_(produto_ids))
         precos_db = {row[0]: row[1] for row in session.exec(stmt).all()}
