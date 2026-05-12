@@ -212,7 +212,7 @@ class ImpressaoService:
                         "nome_produto": nome_produto,
                         "quantidade": 0,
                         "preco_unitario": preco_unitario,
-                        "adicionais": [],
+                        "adicionais": adicionais,
                     }
                 itens_por_produto[key]["quantidade"] += quantidade
                 #itens_por_produto[key]["adicionais"].extend(adicionais)
