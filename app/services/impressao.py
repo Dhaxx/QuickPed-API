@@ -252,7 +252,7 @@ class ImpressaoService:
             quantidade
         """
 
-        rows = session.exec( text(stmt), params={"id": comanda_id} ).all()
+        rows = session.exec( text(stmt), params={"id": comanda_id, "estabelecimento_id": estabelecimento_id} ).all()
 
         if not rows:
             raise HTTPException(status_code=500, detail="Erro ao gerar comanda: sem itens encontrados")
