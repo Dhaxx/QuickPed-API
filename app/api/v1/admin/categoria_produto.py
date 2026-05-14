@@ -33,7 +33,7 @@ def update_categoria_produto(
     data: CategoriaProdutoUpdate,
     estabelecimento_id: int = Depends(get_current_estabelecimento),
     session = Depends(get_session),
-    _=Depends(require_permission("produtos", "editar")
+    _=Depends(require_permission("produtos", "editar"))
 ):
     dados = data.model_dump(exclude_unset=True)
     return categoria_produto_service.update(session, categoria_produto_id, dados, estabelecimento_id)
@@ -43,6 +43,6 @@ def delete_categoria_produto(
     categoria_produto_id: int,
     estabelecimento_id: int = Depends(get_current_estabelecimento),
     session = Depends(get_session),
-    _=Depends(require_permission("produtos", "editar")
+    _=Depends(require_permission("produtos", "editar"))
 ):
     return categoria_produto_service.delete(session, categoria_produto_id, estabelecimento_id)
