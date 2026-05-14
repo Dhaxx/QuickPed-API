@@ -11,7 +11,7 @@ def create_categoria_produto(
     data: CategoriaProdutoCreate,
     session = Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
-    _=Depends(require_permission("categorias_produto", "editar"))
+    _=Depends(require_permission("produtos", "editar"))
 ):
     dados = data.model_dump()
 
@@ -23,7 +23,7 @@ def create_categoria_produto(
 def get_categoria_produtos(
     session = Depends(get_session),
     estabelecimento_id: int = Depends(get_current_estabelecimento),
-    _=Depends(require_permission("categorias_produto", "visualizar"))
+    _=Depends(require_permission("produtos", "visualizar"))
 ):
     return categoria_produto_service.get(session, estabelecimento_id)
 
@@ -32,7 +32,8 @@ def update_categoria_produto(
     categoria_produto_id: int,
     data: CategoriaProdutoUpdate,
     estabelecimento_id: int = Depends(get_current_estabelecimento),
-    session = Depends(get_session)
+    session = Depends(get_session),
+    _=Depends(require_permission("produtos", "editar")
 ):
     dados = data.model_dump(exclude_unset=True)
     return categoria_produto_service.update(session, categoria_produto_id, dados, estabelecimento_id)
@@ -41,6 +42,7 @@ def update_categoria_produto(
 def delete_categoria_produto(
     categoria_produto_id: int,
     estabelecimento_id: int = Depends(get_current_estabelecimento),
-    session = Depends(get_session)
+    session = Depends(get_session),
+    _=Depends(require_permission("produtos", "editar")
 ):
     return categoria_produto_service.delete(session, categoria_produto_id, estabelecimento_id)
