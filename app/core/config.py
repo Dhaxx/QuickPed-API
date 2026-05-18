@@ -13,6 +13,14 @@ class Settings(BaseSettings):
     sgbd_driver: str = "sqlite"
     secret_key: str = ""
 
+    # Cloudflare R2
+    CLOUDFLARE_R2_ENDPOINT_URL: str = ""
+    CLOUDFLARE_R2_ACCESS_KEY_ID: str = ""
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY: str = ""
+    CLOUDFLARE_R2_BUCKET_NAME: str = ""
+    CLOUDFLARE_R2_PUBLIC_URL: str = ""
+    CLOUDFLARE_R2_REGION: str = "auto"
+
     @property
     def db_url(self) -> str:
         if self.sgbd_driver == "sqlite":

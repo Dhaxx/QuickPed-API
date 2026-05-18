@@ -22,6 +22,9 @@ class CategoriaPublic(SQLModel):
     produtos: list["ProdutoPublic"]
 
 
+from pydantic import field_serializer
+from app.core.config import settings
+
 class ProdutoPublic(SQLModel):
     id: int
     nome: str
@@ -30,6 +33,17 @@ class ProdutoPublic(SQLModel):
     imagem_url: str | None
     disponivel: bool
     adicionais: list["AdicionalPublic"] = []
+
+    @field_serializer("imagem_url")
+    def serialize_imagem_url(self, imagem_url: str | None) -> str | None:
+        if not imagem_url:
+            return None
+        if imagem_url.startswith("http://") or imagem_url.startswith("https://"):
+            return imagem_url
+        
+        base_url = settings.CLOUDFLARE_R2_PUBLIC_URL.rstrip("/")
+        clean_path = imagem_url.lstrip("/")
+        return f"{base_url}/{clean_path}"
 
 
 class AdicionalPublic(SQLModel):

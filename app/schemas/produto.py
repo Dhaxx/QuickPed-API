@@ -7,9 +7,12 @@ from ..models.produto import (
     Decimal,
 )
 from pydantic import field_validator
+from fastapi import UploadFile
 
 
 class ProdutoCreate(ProdutoBase):
+    imagem_file: Optional[UploadFile] = None
+
     @field_validator("preco")
     def preco_nao_negativo(cls, v: Decimal):
         if v < 0:
@@ -17,9 +20,23 @@ class ProdutoCreate(ProdutoBase):
         return v
 
 
+from pydantic import field_serializer
+from app.core.config import settings
+
 class ProdutoRead(ProdutoBase):
     id: int
     ativo: bool
+
+    @field_serializer("imagem_url")
+    def serialize_imagem_url(self, imagem_url: Optional[str]) -> Optional[str]:
+        if not imagem_url:
+            return None
+        if imagem_url.startswith("http://") or imagem_url.startswith("https://"):
+            return imagem_url
+        
+        base_url = settings.CLOUDFLARE_R2_PUBLIC_URL.rstrip("/")
+        clean_path = imagem_url.lstrip("/")
+        return f"{base_url}/{clean_path}"
 
 
 class ProdutoUpdate(SQLModel):
@@ -32,6 +49,7 @@ class ProdutoUpdate(SQLModel):
     ativo: Optional[bool] = None
     imprime: Optional[bool] = None
     produzido_por: Optional[int] = None
+    imagem_file: Optional[UploadFile] = None
 
     @field_validator("preco")
     def preco_nao_negativo(cls, v: Optional[Decimal]):
